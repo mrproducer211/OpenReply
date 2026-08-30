@@ -1,0 +1,1 @@
+[phases.setup]`nnixPkgs = ["nodejs_22"]
