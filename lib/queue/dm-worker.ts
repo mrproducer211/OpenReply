@@ -727,13 +727,9 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
     return;
   }
 
-  // Dedup: prevent rapid repeated button taps from sending the link multiple
-  // times. If a reveal was already sent within the last 5 minutes for this
-  // user, silently ignore the postback. We do NOT block forever so the user
-  // can still get the link again if they need it (e.g. they lost it).
+  // Dedup: for background read-receipt fallbacks, do not re-send if already sent.
+  // For interactive button taps, apply a brief 5-second debounce against accidental double taps.
   const dedupeId = `reveal:${userId}`;
-  const DEDUP_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
-
   const existingReveal = await prisma.dmLog.findUnique({
     where: {
       automationId_commentId: {
@@ -742,10 +738,17 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
       },
     },
   });
+
+  if (fallback && existingReveal?.status === "SENT") {
+    return;
+  }
+
+  const DEBOUNCE_WINDOW_MS = 5 * 1000; // 5 seconds debounce
   if (
+    !fallback &&
     existingReveal?.status === "SENT" &&
     existingReveal.dmSentAt &&
-    Date.now() - new Date(existingReveal.dmSentAt).getTime() < DEDUP_WINDOW_MS
+    Date.now() - new Date(existingReveal.dmSentAt).getTime() < DEBOUNCE_WINDOW_MS
   ) {
     return;
   }
@@ -1034,34 +1037,22 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
     }
 
     if (matchesOpeningBtn || isGenericLinkRequest || auto.openingDmEnabled) {
-      const dedupeId = `reveal:${senderId}`;
-      const existingReveal = await prisma.dmLog.findUnique({
-        where: {
-          automationId_commentId: {
-            automationId: auto.id,
-            commentId: dedupeId,
-          },
+      await getDMQueue().add(
+        POSTBACK_JOB_NAME,
+        {
+          instagramAccountId,
+          userId: senderId,
+          payload: auto.requireFollow
+            ? `followcheck:${auto.id}`
+            : `reveal:${auto.id}`,
         },
-      });
-
-      if (!existingReveal || existingReveal.status !== "SENT") {
-        await getDMQueue().add(
-          POSTBACK_JOB_NAME,
-          {
-            instagramAccountId,
-            userId: senderId,
-            payload: auto.requireFollow
-              ? `followcheck:${auto.id}`
-              : `reveal:${auto.id}`,
-          },
-          {
-            jobId: `postback_${instagramAccountId}_${senderId}_msg_${Buffer.from(
-              messageId
-            ).toString("base64url")}`,
-          }
-        );
-        return;
-      }
+        {
+          jobId: `postback_${instagramAccountId}_${senderId}_msg_${Buffer.from(
+            messageId
+          ).toString("base64url")}_${Date.now()}`,
+        }
+      );
+      return;
     }
   }
 

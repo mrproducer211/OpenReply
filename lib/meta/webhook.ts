@@ -186,7 +186,7 @@ export function parsePostbackEvents(
 ): WebhookPostbackEvent[] {
   const events: WebhookPostbackEvent[] = [];
 
-  if (payload.object !== "instagram") return events;
+  if (payload.object !== "instagram" && payload.object !== "page") return events;
 
   for (const entry of payload.entry ?? []) {
     for (const messaging of entry.messaging ?? []) {
@@ -252,7 +252,7 @@ export function parseMessageEvents(
 ): WebhookMessageEvent[] {
   const events: WebhookMessageEvent[] = [];
 
-  if (payload.object !== "instagram") return events;
+  if (payload.object !== "instagram" && payload.object !== "page") return events;
 
   for (const entry of payload.entry ?? []) {
     for (const messaging of entry.messaging ?? []) {
@@ -323,7 +323,7 @@ export function parseMessageEvents(
 export function parseReadEvents(payload: WebhookPayload): WebhookReadEvent[] {
   const events: WebhookReadEvent[] = [];
 
-  if (payload.object !== "instagram") return events;
+  if (payload.object !== "instagram" && payload.object !== "page") return events;
 
   for (const entry of payload.entry ?? []) {
     for (const messaging of entry.messaging ?? []) {

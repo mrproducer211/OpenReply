@@ -449,7 +449,7 @@ describe("parseMessageEvents", () => {
   it("should ignore non-instagram payloads", () => {
     expect(
       parseMessageEvents({
-        object: "page",
+        object: "user",
         entry: [
           {
             id: "ig_456",
@@ -646,5 +646,38 @@ describe("parsePostbackEvents", () => {
       },
     ]);
   });
+
+  it("should extract postback events from page object payloads", () => {
+    const payload = {
+      object: "page",
+      entry: [
+        {
+          id: "page_123",
+          time: 1234567890,
+          messaging: [
+            {
+              sender: { id: "user_456" },
+              recipient: { id: "page_123" },
+              postback: {
+                mid: "mid_p1",
+                payload: "reveal:auto_999",
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    const events = parsePostbackEvents(payload);
+    expect(events).toEqual([
+      {
+        instagramAccountId: "page_123",
+        userId: "user_456",
+        payload: "reveal:auto_999",
+        mid: "mid_p1",
+      },
+    ]);
+  });
 });
+
 

@@ -121,22 +121,12 @@ export async function POST(request: NextRequest) {
     );
 
     for (const event of postbackEvents) {
-      await queue.add(
-        POSTBACK_JOB_NAME,
-        {
-          instagramAccountId: event.instagramAccountId,
-          userId: event.userId,
-          payload: event.payload,
-          mid: event.mid,
-        },
-        {
-          // BullMQ forbids ":" in custom job ids, and the payload is
-          // "reveal:<id>", so build with underscores and strip any colons.
-          jobId: `postback_${event.instagramAccountId}_${event.userId}_${(
-            event.mid ?? event.payload
-          ).replace(/:/g, "_")}`,
-        }
-      );
+      await queue.add(POSTBACK_JOB_NAME, {
+        instagramAccountId: event.instagramAccountId,
+        userId: event.userId,
+        payload: event.payload,
+        mid: event.mid,
+      });
     }
 
     // Inbound DMs → keyword-triggered autoreply.
