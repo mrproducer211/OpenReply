@@ -727,10 +727,12 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
     return;
   }
 
-  // Dedup: only send the reveal once per user per automation. Repeated button
-  // taps produce new postback events with new message ids, so dedup must key on
-  // the user id rather than the message id.
+  // Dedup: prevent rapid repeated button taps from sending the link multiple
+  // times. If a reveal was already sent within the last 5 minutes for this
+  // user, silently ignore the postback. We do NOT block forever so the user
+  // can still get the link again if they need it (e.g. they lost it).
   const dedupeId = `reveal:${userId}`;
+  const DEDUP_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 
   const existingReveal = await prisma.dmLog.findUnique({
     where: {
@@ -739,8 +741,15 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
         commentId: dedupeId,
       },
     },
+    select: { status: true, dmSentAt: true },
   });
-  if (existingReveal?.status === "SENT") return;
+  if (
+    existingReveal?.status === "SENT" &&
+    existingReveal.dmSentAt &&
+    Date.now() - existingReveal.dmSentAt.getTime() < DEDUP_WINDOW_MS
+  ) {
+    return;
+  }
 
   // Personalize {username} from the opening DM log for this user, if present.
   const openingLog = await prisma.dmLog.findFirst({
