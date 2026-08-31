@@ -741,12 +741,11 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
         commentId: dedupeId,
       },
     },
-    select: { status: true, dmSentAt: true },
   });
   if (
     existingReveal?.status === "SENT" &&
     existingReveal.dmSentAt &&
-    Date.now() - existingReveal.dmSentAt.getTime() < DEDUP_WINDOW_MS
+    Date.now() - new Date(existingReveal.dmSentAt).getTime() < DEDUP_WINDOW_MS
   ) {
     return;
   }
@@ -770,7 +769,7 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
   // on a read fallback anyone who is not positively confirmed as a follower is
   // silently skipped. A strict gate never releases a link on an unavailable
   // follow-status response, so waiting for the read fallback cannot bypass it.
-  if ((isFollowCheck || fallback) && automation.requireFollow) {
+  if ((isFollowCheck || fallback || automation.requireFollow) && automation.requireFollow) {
     const follows = await getUserFollowStatus(accessToken, userId);
     if (follows !== true) {
       if (fallback) return;
@@ -968,6 +967,103 @@ async function processFollowUp(job: Job<ProcessFollowUpJob>): Promise<void> {
  */
 async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
   const { instagramAccountId, messageId, messageText, senderId } = job.data;
+
+  // Check if this message is a response to an active campaign's opening DM or follow prompt
+  const recentOpeningLog = await prisma.dmLog.findFirst({
+    where: {
+      commenterId: senderId,
+      status: "SENT",
+      automation: {
+        isActive: true,
+        instagramAccount: { instagramId: instagramAccountId },
+      },
+    },
+    include: {
+      automation: {
+        include: {
+          instagramAccount: true,
+          workspace: true,
+          trackedLinks: {
+            select: { slug: true, label: true, destinationUrl: true },
+            orderBy: { createdAt: "asc" },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (recentOpeningLog?.automation) {
+    const auto = recentOpeningLog.automation;
+    const normalizedText = messageText.trim().toLowerCase();
+    const openingBtn = auto.openingDmButtonLabel?.trim().toLowerCase();
+    const followBtn = auto.followPromptButtonLabel?.trim().toLowerCase();
+
+    const matchesOpeningBtn =
+      openingBtn !== undefined &&
+      (normalizedText === openingBtn ||
+        normalizedText.includes(openingBtn) ||
+        openingBtn.includes(normalizedText));
+    const matchesFollowBtn =
+      followBtn !== undefined &&
+      (normalizedText === followBtn ||
+        normalizedText.includes(followBtn) ||
+        followBtn.includes(normalizedText));
+    const isGenericLinkRequest =
+      normalizedText.includes("link") || normalizedText.includes("send");
+    const isGenericFollowConfirm =
+      normalizedText.includes("following") ||
+      normalizedText.includes("followed") ||
+      normalizedText.includes("done");
+
+    if (matchesFollowBtn || isGenericFollowConfirm) {
+      await getDMQueue().add(
+        POSTBACK_JOB_NAME,
+        {
+          instagramAccountId,
+          userId: senderId,
+          payload: `followcheck:${auto.id}`,
+        },
+        {
+          jobId: `postback_${instagramAccountId}_${senderId}_msg_${Buffer.from(
+            messageId
+          ).toString("base64url")}`,
+        }
+      );
+      return;
+    }
+
+    if (matchesOpeningBtn || isGenericLinkRequest || auto.openingDmEnabled) {
+      const dedupeId = `reveal:${senderId}`;
+      const existingReveal = await prisma.dmLog.findUnique({
+        where: {
+          automationId_commentId: {
+            automationId: auto.id,
+            commentId: dedupeId,
+          },
+        },
+      });
+
+      if (!existingReveal || existingReveal.status !== "SENT") {
+        await getDMQueue().add(
+          POSTBACK_JOB_NAME,
+          {
+            instagramAccountId,
+            userId: senderId,
+            payload: auto.requireFollow
+              ? `followcheck:${auto.id}`
+              : `reveal:${auto.id}`,
+          },
+          {
+            jobId: `postback_${instagramAccountId}_${senderId}_msg_${Buffer.from(
+              messageId
+            ).toString("base64url")}`,
+          }
+        );
+        return;
+      }
+    }
+  }
 
   const automations = await prisma.automation.findMany({
     where: {

@@ -265,22 +265,41 @@ export async function getUserFollowStatus(
   accessToken: string,
   recipientId: string
 ): Promise<boolean | null> {
-  const url = new URL(`${instagramGraphBase()}/${recipientId}`);
-  url.searchParams.set("fields", "is_user_follow_business");
+  const igUrl = new URL(`${instagramGraphBase()}/${recipientId}`);
+  igUrl.searchParams.set("fields", "is_user_follow_business");
+  igUrl.searchParams.set("access_token", accessToken);
 
   try {
-    const response = await fetch(url.toString(), {
+    const response = await fetch(igUrl.toString(), {
       method: "GET",
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    if (!response.ok) return null;
-    const data = await response.json();
-    return typeof data?.is_user_follow_business === "boolean"
-      ? data.is_user_follow_business
-      : null;
-  } catch {
-    return null;
-  }
+    if (response.ok) {
+      const data = await response.json();
+      if (typeof data?.is_user_follow_business === "boolean") {
+        return data.is_user_follow_business;
+      }
+    }
+  } catch {}
+
+  const fbUrl = new URL(`${facebookGraphBase()}/${recipientId}`);
+  fbUrl.searchParams.set("fields", "is_user_follow_business");
+  fbUrl.searchParams.set("access_token", accessToken);
+
+  try {
+    const response = await fetch(fbUrl.toString(), {
+      method: "GET",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (typeof data?.is_user_follow_business === "boolean") {
+        return data.is_user_follow_business;
+      }
+    }
+  } catch {}
+
+  return null;
 }
 
 /**

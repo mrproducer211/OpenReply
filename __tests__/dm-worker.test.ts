@@ -725,6 +725,7 @@ describe("DM Worker — Full Pipeline", () => {
     mockPrisma.dmLog.findUnique.mockResolvedValue({
       id: "existing_reveal",
       status: "SENT",
+      dmSentAt: new Date(),
     });
 
     const processor = getProcessor();
@@ -1145,4 +1146,32 @@ describe("DM Worker — DM keyword trigger", () => {
       })
     );
   });
+
+  it("should route an inbound message matching an opening DM button into a postback job", async () => {
+    mockPrisma.dmLog.findFirst.mockResolvedValue({
+      commenterName: "commenter_user",
+      automation: {
+        ...mockAutomation,
+        openingDmEnabled: true,
+        openingDmButtonLabel: "Send me the link",
+        requireFollow: false,
+      },
+    });
+    mockPrisma.dmLog.findUnique.mockResolvedValue(null);
+
+    const processor = getProcessor();
+    await processor(
+      createMockMessageJob({ messageText: "Send me the link" })
+    );
+
+    expect(mockQueueAdd).toHaveBeenCalledWith(
+      "process-postback",
+      expect.objectContaining({
+        payload: "reveal:auto_789",
+        userId: "commenter_999",
+      }),
+      expect.any(Object)
+    );
+  });
 });
+

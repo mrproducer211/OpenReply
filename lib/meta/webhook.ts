@@ -47,29 +47,44 @@ export interface WebhookCommentEvent {
   originalMediaId?: string;
 }
 
+interface WebhookChangeValue {
+  id?: string;
+  comment_id?: string;
+  text?: string;
+  from?: {
+    id?: string;
+    username?: string;
+  };
+  media?: {
+    id?: string;
+    // Present when media_product_type is "AD": the ad copy gets its own
+    // media id, and this points back to the post it was boosted from.
+    original_media_id?: string;
+    ad_id?: string;
+    media_product_type?: string;
+  };
+  media_id?: string;
+  sender?: { id?: string };
+  recipient?: { id?: string };
+  postback?: { mid?: string; title?: string; payload?: string };
+  read?: { watermark?: number; seq?: number };
+  message?: {
+    mid?: string;
+    text?: string;
+    is_echo?: boolean;
+    is_deleted?: boolean;
+    is_unsupported?: boolean;
+    attachments?: Array<{ type?: string }>;
+    quick_reply?: { payload?: string };
+  };
+}
+
 interface WebhookEntry {
   id: string;
   time: number;
   changes?: Array<{
     field: string;
-    value: {
-      id?: string;
-      comment_id?: string;
-      text?: string;
-      from?: {
-        id?: string;
-        username?: string;
-      };
-      media?: {
-        id?: string;
-        // Present when media_product_type is "AD": the ad copy gets its own
-        // media id, and this points back to the post it was boosted from.
-        original_media_id?: string;
-        ad_id?: string;
-        media_product_type?: string;
-      };
-      media_id?: string;
-    };
+    value: WebhookChangeValue;
   }>;
   messaging?: Array<{
     sender?: { id?: string };
@@ -83,6 +98,7 @@ interface WebhookEntry {
       is_deleted?: boolean;
       is_unsupported?: boolean;
       attachments?: Array<{ type?: string }>;
+      quick_reply?: { payload?: string };
     };
   }>;
 }
@@ -162,7 +178,7 @@ export function parseCommentEvents(payload: WebhookPayload): WebhookCommentEvent
 }
 
 /**
- * Parse button-tap postbacks (from an opening DM's button) out of a webhook
+ * Parse button-tap postbacks (from an opening DM's button or quick reply) out of a webhook
  * payload. Each event carries the tapping user's IGSID and our postback payload.
  */
 export function parsePostbackEvents(
@@ -174,7 +190,8 @@ export function parsePostbackEvents(
 
   for (const entry of payload.entry ?? []) {
     for (const messaging of entry.messaging ?? []) {
-      const postbackPayload = messaging.postback?.payload;
+      const postbackPayload =
+        messaging.postback?.payload ?? messaging.message?.quick_reply?.payload;
       const userId = messaging.sender?.id;
       const accountId = entry.id ?? messaging.recipient?.id;
 
@@ -186,8 +203,32 @@ export function parsePostbackEvents(
         instagramAccountId: accountId,
         userId,
         payload: postbackPayload,
-        mid: messaging.postback?.mid,
+        mid: messaging.postback?.mid ?? messaging.message?.mid,
       });
+    }
+
+    for (const change of entry.changes ?? []) {
+      if (
+        change.field === "messaging_postbacks" ||
+        change.field === "messages" ||
+        change.field === "postback"
+      ) {
+        const val = change.value;
+        const postbackPayload =
+          val?.postback?.payload ?? val?.message?.quick_reply?.payload;
+        const userId = val?.sender?.id;
+        const accountId = entry.id ?? val?.recipient?.id;
+
+        if (!postbackPayload || !userId || !accountId) continue;
+        if (userId === accountId) continue;
+
+        events.push({
+          instagramAccountId: accountId,
+          userId,
+          payload: postbackPayload,
+          mid: val?.postback?.mid ?? val?.message?.mid,
+        });
+      }
     }
   }
 
@@ -203,6 +244,8 @@ export function parsePostbackEvents(
  * deletions, and attachment-only messages with no text are dropped here so
  * the worker never sees them — an echo would otherwise let an autoreply
  * containing its own keyword trigger itself.
+ *
+ * Messages with a `quick_reply` payload are handled as postbacks and skipped here.
  */
 export function parseMessageEvents(
   payload: WebhookPayload
@@ -216,6 +259,9 @@ export function parseMessageEvents(
       const message = messaging.message;
       if (!message) continue;
       if (message.is_echo || message.is_deleted || message.is_unsupported) {
+        continue;
+      }
+      if (message.quick_reply?.payload) {
         continue;
       }
 
@@ -234,6 +280,35 @@ export function parseMessageEvents(
         messageText: text,
         senderId,
       });
+    }
+
+    for (const change of entry.changes ?? []) {
+      if (change.field === "messages" || change.field === "message") {
+        const val = change.value;
+        const message = val?.message;
+        if (!message) continue;
+        if (message.is_echo || message.is_deleted || message.is_unsupported) {
+          continue;
+        }
+        if (message.quick_reply?.payload) {
+          continue;
+        }
+
+        const text = message.text?.trim();
+        const messageId = message.mid;
+        const senderId = val?.sender?.id;
+        const accountId = entry.id ?? val?.recipient?.id;
+
+        if (!text || !messageId || !senderId || !accountId) continue;
+        if (senderId === accountId) continue;
+
+        events.push({
+          instagramAccountId: accountId,
+          messageId,
+          messageText: text,
+          senderId,
+        });
+      }
     }
   }
 
@@ -265,6 +340,25 @@ export function parseReadEvents(payload: WebhookPayload): WebhookReadEvent[] {
         userId,
         watermark: messaging.read.watermark,
       });
+    }
+
+    for (const change of entry.changes ?? []) {
+      if (change.field === "messaging_seen" || change.field === "read") {
+        const val = change.value;
+        if (!val?.read) continue;
+
+        const userId = val.sender?.id;
+        const accountId = entry.id ?? val.recipient?.id;
+
+        if (!userId || !accountId) continue;
+        if (userId === accountId) continue;
+
+        events.push({
+          instagramAccountId: accountId,
+          userId,
+          watermark: val.read.watermark,
+        });
+      }
     }
   }
 

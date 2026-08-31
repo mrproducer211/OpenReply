@@ -9,6 +9,7 @@ import {
   verifyWebhookSignature,
   parseCommentEvents,
   parseMessageEvents,
+  parsePostbackEvents,
   parseReadEvents,
 } from "../lib/meta/webhook";
 import { createHmac } from "crypto";
@@ -515,3 +516,135 @@ describe("parseReadEvents", () => {
     expect(parseReadEvents(payload)).toHaveLength(0);
   });
 });
+
+describe("parsePostbackEvents", () => {
+  it("should parse a button postback event", () => {
+    const payload = {
+      object: "instagram",
+      entry: [
+        {
+          id: "ig_456",
+          time: 1234567890,
+          messaging: [
+            {
+              sender: { id: "user_999" },
+              recipient: { id: "ig_456" },
+              postback: {
+                mid: "mid_abc",
+                title: "Send me the link",
+                payload: "reveal:auto_123",
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(parsePostbackEvents(payload)).toEqual([
+      {
+        instagramAccountId: "ig_456",
+        userId: "user_999",
+        payload: "reveal:auto_123",
+        mid: "mid_abc",
+      },
+    ]);
+  });
+
+  it("should parse a quick reply payload as a postback event", () => {
+    const payload = {
+      object: "instagram",
+      entry: [
+        {
+          id: "ig_456",
+          time: 1234567890,
+          messaging: [
+            {
+              sender: { id: "user_999" },
+              recipient: { id: "ig_456" },
+              message: {
+                mid: "mid_quick_1",
+                text: "Send me the link",
+                quick_reply: {
+                  payload: "reveal:auto_123",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(parsePostbackEvents(payload)).toEqual([
+      {
+        instagramAccountId: "ig_456",
+        userId: "user_999",
+        payload: "reveal:auto_123",
+        mid: "mid_quick_1",
+      },
+    ]);
+
+    // parseMessageEvents must skip it
+    expect(parseMessageEvents(payload)).toHaveLength(0);
+  });
+
+  it("should ignore postbacks sent by the connected account itself", () => {
+    const payload = {
+      object: "instagram",
+      entry: [
+        {
+          id: "ig_456",
+          time: 1234567890,
+          messaging: [
+            {
+              sender: { id: "ig_456" },
+              recipient: { id: "ig_456" },
+              postback: {
+                mid: "mid_abc",
+                payload: "reveal:auto_123",
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(parsePostbackEvents(payload)).toHaveLength(0);
+  });
+
+  it("should extract postback events from entry.changes format", () => {
+    const payload = {
+      object: "instagram",
+      entry: [
+        {
+          id: "90010195674710",
+          time: 1234567890,
+          changes: [
+            {
+              field: "messaging_postbacks",
+              value: {
+                sender: { id: "2494432963985342" },
+                recipient: { id: "90010195674710" },
+                postback: {
+                  mid: "aWdfZAG1faXRlbToxOklHTWVzc2FnZAUlE",
+                  title: "Send me the link",
+                  payload: "reveal:auto_123",
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    const events = parsePostbackEvents(payload);
+    expect(events).toEqual([
+      {
+        instagramAccountId: "90010195674710",
+        userId: "2494432963985342",
+        payload: "reveal:auto_123",
+        mid: "aWdfZAG1faXRlbToxOklHTWVzc2FnZAUlE",
+      },
+    ]);
+  });
+});
+
