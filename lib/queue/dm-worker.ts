@@ -719,11 +719,7 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
     },
   });
 
-  if (
-    !automation ||
-    automation.instagramAccount.instagramId !== instagramAccountId ||
-    !automation.instagramAccount.accessToken
-  ) {
+  if (!automation || !automation.instagramAccount?.accessToken) {
     return;
   }
 
@@ -929,8 +925,7 @@ async function processFollowUp(job: Job<ProcessFollowUpJob>): Promise<void> {
     !automation ||
     !automation.followUpEnabled ||
     !automation.followUpMessage?.trim() ||
-    automation.instagramAccount.instagramId !== instagramAccountId ||
-    !automation.instagramAccount.accessToken
+    !automation.instagramAccount?.accessToken
   ) {
     return;
   }
@@ -978,7 +973,6 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
       status: "SENT",
       automation: {
         isActive: true,
-        instagramAccount: { instagramId: instagramAccountId },
       },
     },
     include: {
