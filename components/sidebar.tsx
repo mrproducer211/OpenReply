@@ -56,8 +56,8 @@ export default function Sidebar({
           className="px-6 py-5 border-b border-border"
           style={{ paddingTop: "calc(1.25rem + env(safe-area-inset-top))" }}
         >
-          <Link href="/dashboard" className="text-base font-semibold">
-            OpenReply
+          <Link href="/dashboard" className="text-base font-bold tracking-tight text-foreground">
+            Claude OpenAI
           </Link>
         </div>
 
@@ -87,8 +87,8 @@ export default function Sidebar({
         </nav>
 
         <div className="px-5 py-4 border-t border-border">
-          <p className="text-sm text-foreground truncate">{workspaceName}</p>
-          <p className="text-xs text-muted">Self-hosted</p>
+          <p className="text-sm font-medium text-foreground truncate">{workspaceName}</p>
+          <p className="text-xs text-muted">Built for the people, by the people</p>
         </div>
       </aside>
     </>

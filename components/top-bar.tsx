@@ -7,6 +7,7 @@
  */
 
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -55,22 +56,31 @@ export default function TopBar({
         <h1 className="truncate text-base font-semibold sm:text-lg">{title}</h1>
       </div>
 
-      {instagramAccountCount > 0 ? (
-        <p className="shrink-0 truncate text-sm text-muted">
-          {instagramAccountCount > 1
-            ? `${instagramAccountCount} accounts`
-            : `@${instagramUsername}`}
-        </p>
-      ) : (
-        <a
-          href="/api/instagram/connect"
-          className="shrink-0 whitespace-nowrap text-sm font-medium px-3 py-1.5 rounded bg-accent text-white hover:bg-accent-hover"
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        {instagramAccountCount > 0 ? (
+          <p className="hidden max-w-40 truncate text-sm text-muted sm:block">
+            {instagramAccountCount > 1
+              ? `${instagramAccountCount} accounts`
+              : `@${instagramUsername}`}
+          </p>
+        ) : (
+          <a
+            href="/api/instagram/connect"
+            className="whitespace-nowrap rounded bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
+          >
+            {/* Full label needs more room than a 360px header has to spare. */}
+            <span className="sm:hidden">Connect</span>
+            <span className="hidden sm:inline">Connect Instagram</span>
+          </a>
+        )}
+        <button
+          type="button"
+          onClick={() => signOut({ redirectTo: "/login" })}
+          className="whitespace-nowrap rounded border border-border px-3 py-1.5 text-sm font-medium text-muted transition hover:border-foreground/30 hover:text-foreground"
         >
-          {/* Full label needs more room than a 360px header has to spare. */}
-          <span className="sm:hidden">Connect</span>
-          <span className="hidden sm:inline">Connect Instagram</span>
-        </a>
-      )}
+          Log out
+        </button>
+      </div>
     </header>
   );
 }

@@ -41,6 +41,13 @@ import {
 
 const BACKOFF_DELAYS = [5 * 60 * 1000, 15 * 60 * 1000, 45 * 60 * 1000];
 
+// A follow gate must never give a link away when Instagram cannot confirm the
+// relationship. The retry button runs the same follow check again; it does not
+// bypass the gate.
+const FOLLOW_VERIFICATION_RETRY_MESSAGE =
+  "I couldn't verify your follow just now. Please wait a moment, then tap below to try again.";
+const FOLLOW_VERIFICATION_RETRY_BUTTON = "Try again";
+
 function formatError(error: unknown): string {
   if (error instanceof MetaApiError) {
     return `Meta API Error ${error.code}: ${error.message}`;
@@ -543,9 +550,10 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
     // status at comment time: confirmed followers get the link now, everyone
     // else gets the "follow me first" prompt (re-verified on tap).
     let sendFollowPrompt = false;
+    let followStatus: boolean | null = true;
     if (automation.requireFollow && !useOpeningDm) {
-      const alreadyFollows = await getUserFollowStatus(accessToken, commenterId);
-      sendFollowPrompt = alreadyFollows !== true;
+      followStatus = await getUserFollowStatus(accessToken, commenterId);
+      sendFollowPrompt = followStatus !== true;
     }
 
     try {
@@ -568,8 +576,10 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
       } else if (sendFollowPrompt) {
         const promptText = renderMessageWithoutLink({
           message:
-            automation.followPromptMessage ||
-            "quick favor before i send your link. i don't make any money from this, it's free. if you want to support me, just don't unfollow after, and star the repo on github if it helps you. tap the button once you're following and i'll send it over",
+            followStatus === null
+              ? FOLLOW_VERIFICATION_RETRY_MESSAGE
+              : automation.followPromptMessage ||
+                "Quick favor before I send your link! Make sure you are following, then tap the button below and I'll send it right over!",
           commenterName,
         });
         await sendPrivateReplyWithButton(
@@ -577,7 +587,9 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
           automation.instagramAccount.instagramId,
           commentId,
           promptText,
-          automation.followPromptButtonLabel || "i'm following",
+          followStatus === null
+            ? FOLLOW_VERIFICATION_RETRY_BUTTON
+            : automation.followPromptButtonLabel || "i'm following",
           `followcheck:${automation.id}`
         );
       } else if (automation.trackedLinks.length > 0) {
@@ -747,18 +759,19 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
 
   // Follow-gate: before revealing the link, verify the user follows. On a
   // `followcheck:` tap a non-follower gets the prompt again (no quota spent);
-  // on a read fallback a non-follower is silently skipped — the gate must not
-  // be bypassable by just reading the DM and waiting. Following, or
-  // unverifiable (null), falls through and delivers the link — fail-open so a
-  // real follower is never trapped.
+  // on a read fallback anyone who is not positively confirmed as a follower is
+  // silently skipped. A strict gate never releases a link on an unavailable
+  // follow-status response, so waiting for the read fallback cannot bypass it.
   if ((isFollowCheck || fallback) && automation.requireFollow) {
     const follows = await getUserFollowStatus(accessToken, userId);
-    if (follows === false) {
+    if (follows !== true) {
       if (fallback) return;
       const promptText = renderMessageWithoutLink({
         message:
-          automation.followPromptMessage ||
-          "quick favor before i send your link. i don't make any money from this, it's free. if you want to support me, just don't unfollow after, and star the repo on github if it helps you. tap the button once you're following and i'll send it over",
+          follows === null
+            ? FOLLOW_VERIFICATION_RETRY_MESSAGE
+            : automation.followPromptMessage ||
+              "Quick favor before I send your link! Make sure you are following, then tap the button below and I'll send it right over!",
         commenterName,
       });
       try {
@@ -767,7 +780,9 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
           automation.instagramAccount.instagramId,
           userId,
           promptText,
-          automation.followPromptButtonLabel || "i'm following",
+          follows === null
+            ? FOLLOW_VERIFICATION_RETRY_BUTTON
+            : automation.followPromptButtonLabel || "i'm following",
           `followcheck:${automation.id}`
         );
       } catch (error) {
@@ -1059,15 +1074,13 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
 
     // Follow gate: anyone not confirmed as a follower gets the prompt instead of
     // the link, with the same `followcheck:` button that re-verifies on tap.
-    // `null` (unverifiable) prompts too — this is first contact, exactly like a
-    // comment, so it follows processComment's fail-closed rule rather than the
-    // postback path's fail-open one. Fail-open is only safe after a tap, where
-    // the user has already claimed to follow; here it would hand the link to
-    // anyone whose status the API happens not to resolve.
+    // `null` (unverifiable) also prompts and never releases the link. The
+    // postback path uses the same fail-closed rule.
     let sendFollowPrompt = false;
+    let followStatus: boolean | null = true;
     if (automation.requireFollow) {
-      const follows = await getUserFollowStatus(accessToken, senderId);
-      sendFollowPrompt = follows !== true;
+      followStatus = await getUserFollowStatus(accessToken, senderId);
+      sendFollowPrompt = followStatus !== true;
     }
 
     const usage = await reserveWorkspaceDMSend(automation.workspaceId);
@@ -1096,8 +1109,10 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
       if (sendFollowPrompt) {
         const promptText = renderMessageWithoutLink({
           message:
-            automation.followPromptMessage ||
-            "Almost there! Follow me and tap the button below to grab your link 💛",
+            followStatus === null
+              ? FOLLOW_VERIFICATION_RETRY_MESSAGE
+              : automation.followPromptMessage ||
+                "Almost there! Follow me and tap the button below to grab your link 💛",
           commenterName,
         });
         await sendDirectMessageWithButton(
@@ -1105,7 +1120,9 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
           automation.instagramAccount.instagramId,
           senderId,
           promptText,
-          automation.followPromptButtonLabel || "I'm following ✅",
+          followStatus === null
+            ? FOLLOW_VERIFICATION_RETRY_BUTTON
+            : automation.followPromptButtonLabel || "I'm following ✅",
           `followcheck:${automation.id}`
         );
       } else {

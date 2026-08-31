@@ -757,7 +757,17 @@ export async function subscribeInstagramAccountToWebhooks(
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
-        subscribed_fields: ["comments", "messages"],
+        // `messaging_postbacks` is emitted when a recipient taps an opening-DM
+        // button. Without it, the opening private reply arrives but its
+        // `reveal:<campaignId>` action never reaches our webhook, so the link
+        // is never delivered. `messaging_seen` enables the existing read
+        // fallback for recipients who open the DM without tapping its button.
+        subscribed_fields: [
+          "comments",
+          "messages",
+          "messaging_postbacks",
+          "messaging_seen",
+        ],
       }),
     }
   );

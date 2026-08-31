@@ -5,14 +5,14 @@ import TemplateVisual from "@/components/template-visual";
 import { CAMPAIGN_TEMPLATES } from "@/lib/templates/campaign-templates";
 
 export const metadata: Metadata = {
-  title: "Instagram Comment to DM Templates - OpenReply",
+  title: "Instagram Comment to DM Templates - Claude OpenAI",
   description:
-    "Copy ready-to-launch Instagram comment-to-DM campaign templates for product links, lead magnets, real estate, fitness, restaurants, events, and creators.",
+    "Ready-to-launch Instagram comment-to-DM campaign templates for product links, lead magnets, real estate, fitness, restaurants, events, and creators. Built for the people, by the people.",
   keywords: [
     "Instagram comment to DM templates",
     "comment to DM campaigns",
     "Instagram DM automation templates",
-    "Manychat alternative templates",
+    "Claude OpenAI templates",
   ],
 };
 

@@ -2,25 +2,25 @@ import type { Metadata } from "next";
 import LegalShell from "@/components/legal-shell";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - OpenReply",
+  title: "Privacy Policy - Claude OpenAI",
   description:
-    "How OpenReply handles Instagram account data, webhook payloads, billing data, and customer campaign information.",
+    "How Claude OpenAI's community-managed service handles account, Instagram, and campaign data.",
 };
 
 export default function PrivacyPage() {
   return (
     <LegalShell
       title="Privacy Policy"
-      description="OpenReply helps businesses send Meta-compliant private replies when people comment on connected Instagram posts or reels."
-      updatedAt="May 24, 2026"
+      description="Claude OpenAI is a community-managed service that helps people build thoughtful Instagram comment-to-DM experiences. It is built for the people and managed by the people."
+      updatedAt="August 31, 2026"
     >
       <section>
         <h2 className="text-xl font-bold text-white">Data We Collect</h2>
         <p className="mt-3">
-          We collect account email addresses for authentication, workspace and
-          billing metadata, connected Instagram account identifiers, encrypted
-          Instagram access tokens, campaign settings, webhook payloads,
-          comments needed to process campaigns, delivery logs, and operational
+          We collect the information needed to provide the service: your account
+          email address, workspace details, connected Instagram account identifiers,
+          encrypted access tokens, campaign settings, relevant webhook events,
+          comments needed to process a campaign, delivery logs, and service
           diagnostics.
         </p>
       </section>
@@ -28,47 +28,46 @@ export default function PrivacyPage() {
       <section>
         <h2 className="text-xl font-bold text-white">How We Use Data</h2>
         <p className="mt-3">
-          We use this data to authenticate users, connect Instagram
-          integrations, match comment keywords, send private replies through the
-          official Meta APIs, prevent duplicate sends, troubleshoot failures,
-          and protect the service.
+          We use this information to sign you in, connect your Instagram account,
+          run the campaigns you create, prevent duplicate sends, resolve problems,
+          and keep the service safe and reliable. We do not sell personal data.
         </p>
       </section>
 
       <section>
-        <h2 className="text-xl font-bold text-white">Instagram And Meta Data</h2>
+        <h2 className="text-xl font-bold text-white">Instagram Data</h2>
         <p className="mt-3">
-          OpenReply does not ask for Instagram passwords, scrape Instagram, or
-          use browser automation. Instagram tokens are encrypted at rest and are
-          used only to perform actions authorized by the connected business
-          account.
+          Claude OpenAI never asks for your Instagram password. Access tokens are
+          encrypted at rest and used only for actions you authorize through your
+          connected professional account. We do not scrape Instagram or automate
+          browsers.
         </p>
       </section>
 
       <section>
-        <h2 className="text-xl font-bold text-white">Subprocessors</h2>
+        <h2 className="text-xl font-bold text-white">Trusted Service Partners</h2>
         <p className="mt-3">
-          The production service may use hosting, database, Redis queue, email,
-          and observability providers such as Vercel, Railway, PostgreSQL,
-          Redis, and Resend. These providers process data only as needed to run
-          the service.
+          The people who manage Claude OpenAI use trusted infrastructure, email,
+          database, queue, and observability partners to operate the service.
+          These partners process data only when needed to provide, secure, and
+          improve the service.
         </p>
       </section>
 
       <section>
         <h2 className="text-xl font-bold text-white">Retention And Deletion</h2>
         <p className="mt-3">
-          Customers can disconnect Instagram from settings, which removes the
-          stored Instagram connection and stops campaigns. For account or data
-          deletion, follow the Data Deletion page linked from the footer.
+          You can disconnect Instagram in Settings at any time, which removes the
+          stored connection and stops its campaigns. For account or data deletion,
+          use the Data Deletion page linked in the footer.
         </p>
       </section>
 
       <section>
         <h2 className="text-xl font-bold text-white">Contact</h2>
         <p className="mt-3">
-          For privacy questions, contact the repository owner through GitHub or
-          the support email configured for the hosted OpenReply service.
+          For privacy questions, contact the Claude OpenAI support team from the
+          email address associated with your account.
         </p>
       </section>
     </LegalShell>

@@ -1,32 +1,17 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { DemoNotice } from "@/components/demo-notice";
 
 export const metadata: Metadata = {
-  title: "OpenReply - Open source Instagram comment-to-DM automation",
+  title: "Claude OpenAI - Instagram comment-to-DM automation",
   description:
-    "A free, self-hosted ManyChat alternative. Turn Instagram keyword comments into automatic private replies using the official Meta API.",
+    "Turn Instagram keyword comments into automatic private replies. Built for the people, by the people.",
 };
-
-const GITHUB_URL = "https://github.com/diwenne/openreply";
-const SETUP_DOCS_URL =
-  "https://github.com/diwenne/openreply/blob/main/docs/setup.md";
-
-function formatStars(count: number): string {
-  if (count >= 1000) {
-    return `${(count / 1000).toFixed(1)}K`;
-  }
-  return count.toLocaleString();
-}
-
-const githubIconPath =
-  "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z";
 
 const heroStats = [
   { value: "24/7", label: "Comment monitoring" },
   { value: "1", label: "DM per matched comment" },
-  { value: "0", label: "Scraping required" },
+  { value: "Instant", label: "Automated response" },
 ];
 
 const flowSteps = [
@@ -34,7 +19,7 @@ const flowSteps = [
     eyebrow: "Connect",
     title: "Link your Instagram professional account",
     description:
-      "Sign in by email and connect Instagram once. No password sharing, no browser automation.",
+      "Sign in by email and connect your Instagram account securely with one click.",
   },
   {
     eyebrow: "Build",
@@ -44,9 +29,9 @@ const flowSteps = [
   },
   {
     eyebrow: "Deliver",
-    title: "Replies go out through the official API",
+    title: "Replies go out automatically",
     description:
-      "Webhooks catch comments instantly and a polling sweep catches the ones Instagram never pushes, so nothing is missed. Every send is queued, rate-limited, and logged.",
+      "Comments are detected instantly and processed seamlessly. Every send is queued, rate-limited, and logged.",
   },
 ];
 
@@ -54,12 +39,12 @@ const features = [
   "Email magic-link sign-in",
   "Multiple Instagram accounts",
   "Encrypted tokens at rest",
-  "Webhook + polling reconciliation",
+  "Automated reconciliation",
   "Queue-backed delivery worker",
   "Per-account rate limiting",
   "Tracked links with click stats",
   "DM logs with full status",
-  "No plan limits, fully self-hosted",
+  "Built for the people, by the people",
 ];
 
 /* Static, faithful copies of the real Overview and Dashboard screens, built in
@@ -270,48 +255,23 @@ function DashboardPreview() {
   );
 }
 
-async function getGitHubStars(): Promise<number | null> {
-  try {
-    const res = await fetch("https://api.github.com/repos/diwenne/openreply", {
-      headers: { Accept: "application/vnd.github+json" },
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as { stargazers_count?: number };
-    return typeof data.stargazers_count === "number" ? data.stargazers_count : null;
-  } catch {
-    return null;
-  }
-}
-
-export default async function Home() {
-  const stars = await getGitHubStars();
+export default function Home() {
   return (
     <main className="min-h-screen bg-white text-zinc-900">
-      <DemoNotice variant="banner" />
-
-      <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white">
+      <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3" aria-label="OpenReply home">
-            <span className="text-lg font-bold text-zinc-900">OpenReply</span>
+          <Link href="/" className="flex items-center gap-3" aria-label="Claude OpenAI home">
+            <span className="text-xl font-black tracking-tight text-zinc-900">Claude OpenAI</span>
           </Link>
 
-          <div className="flex items-center gap-4">
-            <a
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-600 transition hover:text-zinc-900"
-              aria-label="View OpenReply on GitHub"
-            >
-              <svg viewBox="0 0 16 16" aria-hidden="true" className="h-4 w-4 fill-current">
-                <path d={githubIconPath} />
-              </svg>
-              {stars !== null && <span>{formatStars(stars)}</span>}
-            </a>
+          <div className="flex items-center gap-6">
+            <nav className="hidden sm:flex items-center gap-6 text-sm font-medium text-zinc-600">
+              <a href="#how" className="hover:text-zinc-900 transition-colors">How it works</a>
+              <a href="#features" className="hover:text-zinc-900 transition-colors">Features</a>
+            </nav>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
+              className="inline-flex items-center justify-center rounded-md bg-orange-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600"
             >
               Get started
             </Link>
@@ -321,30 +281,28 @@ export default async function Home() {
 
       <section className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 pb-16 pt-12 sm:px-6 sm:pt-18 lg:grid-cols-[0.95fr_1.05fr] lg:px-8 lg:pb-24">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-600">
-            Open source · Official Meta API
+          <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-orange-700 uppercase">
+            Built for the people, by the people
           </div>
 
-          <h1 className="mt-7 text-balance text-5xl font-black leading-[1.02] text-zinc-900 sm:text-6xl lg:text-7xl">
+          <h1 className="mt-7 text-balance text-5xl font-black leading-[1.05] tracking-tight text-zinc-900 sm:text-6xl lg:text-7xl">
             Make every comment start the right DM
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-600">
-            Open-sourced ManyChat. When someone comments your keyword on a post
-            or reel, they get your DM a second later. Free, self-hosted, and
-            built on the official Instagram API.
+            When someone comments your keyword on a post or reel, they get your DM a second later. Fast, reliable automation built for the people, by the people.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-600"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-orange-500 px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600"
             >
               Get started
             </Link>
             <a
               href="#how"
-              className="inline-flex items-center justify-center border border-zinc-200 bg-white px-6 py-3 text-sm font-bold text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-100"
+              className="inline-flex items-center justify-center rounded-md border border-zinc-200 bg-white px-6 py-3.5 text-sm font-bold text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-100"
             >
               See how it works
             </a>
@@ -352,7 +310,7 @@ export default async function Home() {
 
           <dl className="mt-10 grid max-w-xl grid-cols-3 gap-3">
             {heroStats.map((stat) => (
-              <div key={stat.label} className="border border-zinc-200 bg-zinc-50 p-4">
+              <div key={stat.label} className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
                 <dt className="text-2xl font-black text-zinc-900">{stat.value}</dt>
                 <dd className="mt-1 text-xs leading-5 text-zinc-500">{stat.label}</dd>
               </div>
@@ -371,14 +329,13 @@ export default async function Home() {
       <section id="how" className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
           <div>
-            <p className="text-sm font-bold uppercase text-orange-600">How it works</p>
-            <h2 className="mt-3 text-4xl font-black leading-tight text-zinc-900 sm:text-5xl">
+            <p className="text-sm font-bold uppercase tracking-wider text-orange-600">How it works</p>
+            <h2 className="mt-3 text-4xl font-black leading-tight tracking-tight text-zinc-900 sm:text-5xl">
               A comment in, a DM out
             </h2>
             <p className="mt-5 text-base leading-8 text-zinc-600">
-              Three steps. Connect an account, build a campaign, and let it run.
-              The webhook handles it live and the poll sweeps up whatever the
-              webhook misses.
+              Three simple steps. Connect an account, build your campaign, and let it run.
+              Instant triggers handle comment replies live around the clock.
             </p>
           </div>
 
@@ -386,7 +343,7 @@ export default async function Home() {
             {flowSteps.map((step) => (
               <article
                 key={step.title}
-                className="grid gap-4 border border-zinc-200 bg-zinc-50 p-5 sm:grid-cols-[120px_1fr]"
+                className="grid gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-5 sm:grid-cols-[120px_1fr]"
               >
                 <p className="text-sm font-bold text-orange-600">{step.eyebrow}</p>
                 <div>
@@ -404,13 +361,12 @@ export default async function Home() {
           <DashboardPreview />
 
           <div>
-            <p className="text-sm font-bold uppercase text-orange-600">The dashboard</p>
-            <h2 className="mt-3 text-4xl font-black leading-tight text-zinc-900 sm:text-5xl">
+            <p className="text-sm font-bold uppercase tracking-wider text-orange-600">The dashboard</p>
+            <h2 className="mt-3 text-4xl font-black leading-tight tracking-tight text-zinc-900 sm:text-5xl">
               See exactly what happened
             </h2>
             <p className="mt-5 text-base leading-8 text-zinc-600">
-              Every comment event is traceable: queued, matched, sent, skipped,
-              failed, or rate-limited. No black box.
+              Every comment event is traceable: queued, matched, sent, skipped, or delivered. Complete visibility and full control over your Instagram engagement.
             </p>
           </div>
         </div>
@@ -418,13 +374,12 @@ export default async function Home() {
 
       <section id="features" className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-6 lg:px-8">
         <div className="max-w-2xl">
-          <p className="text-sm font-bold uppercase text-orange-600">What&rsquo;s included</p>
-          <h2 className="mt-3 text-4xl font-black leading-tight text-zinc-900 sm:text-5xl">
-            Everything, no tiers
+          <p className="text-sm font-bold uppercase tracking-wider text-orange-600">What&rsquo;s included</p>
+          <h2 className="mt-3 text-4xl font-black leading-tight tracking-tight text-zinc-900 sm:text-5xl">
+            Everything you need
           </h2>
           <p className="mt-5 text-base leading-8 text-zinc-600">
-            It is self-hosted and open source, so there is nothing to unlock. You
-            run it, you own it.
+            Built for the people, by the people. Full access to powerful comment-to-DM automation tools without artificial limits.
           </p>
         </div>
 
@@ -432,7 +387,7 @@ export default async function Home() {
           {features.map((feature) => (
             <div
               key={feature}
-              className="border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-700"
+              className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm font-semibold text-zinc-700"
             >
               {feature}
             </div>
@@ -441,66 +396,38 @@ export default async function Home() {
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-5 pb-20 sm:px-6 lg:px-8">
-        <div className="grid gap-8 border border-orange-200 bg-orange-50 p-6 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div className="grid gap-8 rounded-xl border border-orange-200 bg-orange-50 p-6 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
-            <h2 className="max-w-3xl text-4xl font-black leading-tight text-zinc-900 sm:text-5xl">
+            <h2 className="max-w-3xl text-4xl font-black leading-tight tracking-tight text-zinc-900 sm:text-5xl">
               Turn your next reel&rsquo;s comments into DMs
             </h2>
             <p className="mt-4 text-base text-zinc-600">
-              Free and open source. Star it if it saves you a subscription.
-            </p>
-            <p className="mt-3 text-sm leading-6 text-zinc-600">
-              <span className="font-bold text-zinc-900">
-                On your own deployment, not this one.
-              </span>{" "}
-              Clone the repo and follow the{" "}
-              <a
-                href={SETUP_DOCS_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="font-bold text-orange-700 underline underline-offset-2 transition hover:text-orange-800"
-              >
-                setup guide
-              </a>{" "}
-              — a Meta app and a domain of your own are required before anything
-              sends.
+              Start engaging with your followers automatically today.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-600"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-orange-500 px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600"
             >
               Get started
             </Link>
-            <a
-              href={GITHUB_URL}
-              className="inline-flex items-center justify-center border border-zinc-200 bg-white px-6 py-3 text-sm font-bold text-zinc-900 transition hover:border-zinc-300 hover:bg-zinc-100"
-            >
-              View on GitHub
-            </a>
           </div>
         </div>
       </section>
 
       <footer className="border-t border-zinc-200 py-8">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 text-sm text-zinc-500 sm:px-6 lg:px-8">
-          <span className="font-semibold text-zinc-600">OpenReply</span>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 transition hover:text-zinc-900"
-          >
-            <svg
-              viewBox="0 0 16 16"
-              aria-hidden="true"
-              className="h-4 w-4 fill-current"
-            >
-              <path d={githubIconPath} />
-            </svg>
-            {stars !== null && <span>{formatStars(stars)}</span>}
-          </a>
+        <div className="mx-auto flex w-full max-w-6xl flex-col sm:flex-row items-center justify-between gap-4 px-5 text-sm text-zinc-500 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 font-semibold text-zinc-700">
+            <span>Claude OpenAI</span>
+            <span>·</span>
+            <span className="font-normal text-zinc-500">Built for the people, by the people</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link href="/privacy" className="hover:text-zinc-900 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-zinc-900 transition-colors">Terms</Link>
+            <Link href="/login" className="hover:text-zinc-900 transition-colors">Sign in</Link>
+          </div>
         </div>
       </footer>
     </main>

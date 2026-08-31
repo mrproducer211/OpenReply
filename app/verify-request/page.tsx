@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Check your email - OpenReply",
-  description: "A sign-in link was sent to your email.",
+  title: "Check your email - Claude OpenAI",
+  description: "A sign-in link was sent to your email. Built for the people, by the people.",
 };
 
 export default function VerifyRequestPage() {
@@ -10,8 +10,8 @@ export default function VerifyRequestPage() {
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-semibold text-foreground">
-            OpenReply
+          <h1 className="text-3xl font-black tracking-tight text-foreground">
+            Claude OpenAI
           </h1>
         </div>
 

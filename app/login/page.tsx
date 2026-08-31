@@ -3,8 +3,8 @@ import { getCampaignTemplate } from "@/lib/templates/campaign-templates";
 import { DemoNotice } from "@/components/demo-notice";
 
 export const metadata = {
-  title: "Login - OpenReply",
-  description: "Sign in to manage Instagram comment-to-DM campaigns.",
+  title: "Login - Claude OpenAI",
+  description: "Sign in to manage Instagram comment-to-DM campaigns. Built for the people, by the people.",
 };
 
 export default async function LoginPage({
@@ -36,8 +36,8 @@ export default async function LoginPage({
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-semibold text-foreground">
-            OpenReply
+          <h1 className="text-3xl font-black tracking-tight text-foreground">
+            Claude OpenAI
           </h1>
           <p className="text-muted text-sm leading-relaxed mt-2">
             {selectedTemplate
@@ -45,8 +45,6 @@ export default async function LoginPage({
               : "Sign in by email, then connect your Instagram professional account."}
           </p>
         </div>
-
-        <DemoNotice variant="panel" />
 
         <div className="panel rounded p-8 shadow-black/40">
           {selectedTemplate && !checkEmail && (

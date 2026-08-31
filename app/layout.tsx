@@ -1,22 +1,29 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "OpenReply - Open source Instagram comment-to-DM automation",
+  title: "Claude OpenAI - Instagram Comment-to-DM Automation",
   description:
-    "A free, self-hosted ManyChat alternative. Send an Instagram DM automatically when someone comments a keyword on your post or reel, using the official Meta API.",
+    "Turn Instagram keyword comments into automatic private replies. Built for the people, by the people.",
   keywords: [
     "instagram automation",
     "comment to DM",
     "instagram private replies",
-    "social commerce",
-    "manychat alternative",
+    "social engagement",
+    "claude openai",
   ],
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "OpenReply",
+    title: "Claude OpenAI",
     statusBarStyle: "black-translucent",
   },
   icons: {

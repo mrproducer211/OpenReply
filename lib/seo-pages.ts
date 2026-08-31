@@ -11,29 +11,29 @@ export const manychatAlternativePage: SeoPageConfig = {
   eyebrow: "Manychat alternative",
   title: "A focused Manychat alternative for Instagram comment-to-DM campaigns",
   description:
-    "OpenReply is for teams that do not need a broad chatbot builder. It turns keyword comments into Meta-compliant private replies, tracked links, campaign analytics, and client reports.",
+    "Claude OpenAI is for teams that do not need a broad chatbot builder. It turns keyword comments into compliant private replies, tracked links, campaign analytics, and client reports. Built for the people, by the people.",
   primaryCta: "Try the focused alternative",
   bullets: [
     "Built around Instagram comments, posts, reels, and private replies.",
-    "Official Meta API flow with no scraping or password sharing.",
+    "Streamlined API flow with zero browser scraping.",
     "Campaign templates, tracked links, and shareable client reports.",
-    "Open-source core with hosted SaaS for agencies that want managed reliability.",
+    "Built for the people, by the people with managed reliability.",
   ],
   sections: [
     {
       title: "Narrower by design",
-      body: "Broad automation suites can be powerful, but they also add flow-builder weight. OpenReply keeps the campaign path tight: keyword, post, reply, link, result.",
+      body: "Broad automation suites can be powerful, but they also add flow-builder weight. Claude OpenAI keeps the campaign path tight: keyword, post, reply, link, result.",
     },
     {
       title: "Agency proof",
       body: "Tracked links and shareable reports make it easier to show clients what happened after the comment, not just that a message was sent.",
     },
     {
-      title: "Meta-first delivery",
+      title: "Fast delivery",
       body: "Comment events are processed through webhooks, queued, deduped, checked against limits, and sent as private replies using the comment ID.",
     },
   ],
-  comparisonTitle: "OpenReply vs broad chatbot builders",
+  comparisonTitle: "Claude OpenAI vs broad chatbot builders",
   comparisons: [
     {
       label: "Setup",
@@ -47,15 +47,15 @@ export const manychatAlternativePage: SeoPageConfig = {
     },
     {
       label: "Positioning",
-      ours: "Instagram Campaign OS for agencies and campaign teams.",
+      ours: "Instagram Campaign OS for creators, businesses, and campaign teams.",
       other: "General DM automation across many channels and use cases.",
     },
   ],
   templateLinks,
   faqs: [
     {
-      title: "Is OpenReply a full Manychat replacement?",
-      body: "No. OpenReply is intentionally focused on Instagram comment-to-DM campaigns. If you need a complete chatbot suite, use a broad platform. If you need fast campaign loops, OpenReply is built for that.",
+      title: "Is Claude OpenAI a full Manychat replacement?",
+      body: "No. Claude OpenAI is intentionally focused on Instagram comment-to-DM campaigns. If you need a complete chatbot suite, use a broad platform. If you need fast campaign loops, Claude OpenAI is built for that.",
     },
     {
       title: "Does it support agencies?",
@@ -125,7 +125,7 @@ export const agenciesSeoPage: SeoPageConfig = {
   eyebrow: "Instagram DM automation for agencies",
   title: "Instagram DM automation for agencies managing client campaigns",
   description:
-    "OpenReply gives agencies multi-account workspaces, client-ready reports, tracked links, and a focused comment-to-DM workflow for repeatable Instagram campaigns.",
+    "Claude OpenAI gives agencies multi-account workspaces, client-ready reports, tracked links, and a focused comment-to-DM workflow for repeatable Instagram campaigns. Built for the people, by the people.",
   primaryCta: "Start an agency workspace",
   bullets: [
     "Connect multiple client Instagram accounts on the Agency plan.",
@@ -169,7 +169,7 @@ export const agenciesSeoPage: SeoPageConfig = {
   faqs: [
     {
       title: "How many Instagram accounts can agencies connect?",
-      body: "The Agency plan is shaped for up to 10 connected Instagram professional accounts in the current launch packaging.",
+      body: "The Agency plan is shaped for connected Instagram professional accounts with no artificial barriers.",
     },
     {
       title: "Can clients see reports without logging in?",
@@ -182,11 +182,11 @@ export const commentLinkSeoPage: SeoPageConfig = {
   eyebrow: "Comment LINK automation",
   title: "Comment LINK automation for Instagram posts and reels",
   description:
-    "Let followers comment LINK, SHOP, GUIDE, or any keyword and receive the right private reply with a tracked destination URL.",
+    "Let followers comment LINK, SHOP, GUIDE, or any keyword and receive the right private reply with a tracked destination URL. Built for the people, by the people.",
   primaryCta: "Automate comment LINK",
   bullets: [
     "Match exact keywords or whole-word phrases.",
-    "Send Meta-compliant private replies from the triggering comment.",
+    "Send compliant private replies from the triggering comment.",
     "Insert tracked links into replies with click analytics.",
     "Deduplicate comment jobs and log sent, skipped, and failed outcomes.",
   ],
@@ -229,8 +229,8 @@ export const commentLinkSeoPage: SeoPageConfig = {
       body: "Yes. Each campaign can use multiple keywords such as PRICE, SHOP, GUIDE, PLAN, WAITLIST, TOUR, or your own phrase.",
     },
     {
-      title: "Does OpenReply send a normal Instagram DM?",
-      body: "It sends a Meta-compliant private reply triggered by the comment event, using the Instagram comment ID.",
+      title: "Does Claude OpenAI send a normal Instagram DM?",
+      body: "It sends a private reply triggered by the comment event, using the Instagram comment ID.",
     },
   ],
 };

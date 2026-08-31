@@ -1,14 +1,14 @@
 import type { MetadataRoute } from "next";
 
-// Lets a self-hosted instance be installed to the home screen: on iOS via
-// Share -> "Add to Home Screen", on Android through the install prompt. It then
-// opens standalone, without browser chrome, which makes checking campaigns from
-// a phone practical.
+// Lets the app be installed to the home screen: on iOS via Share -> "Add to
+// Home Screen", on Android through the install prompt. It then opens
+// standalone, without browser chrome, which makes checking campaigns from a
+// phone practical.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "OpenReply",
-    short_name: "OpenReply",
-    description: "Instagram comment-to-DM automation",
+    name: "Claude OpenAI",
+    short_name: "Claude OpenAI",
+    description: "Instagram comment-to-DM automation - Built for the people, by the people",
     start_url: "/overview",
     display: "standalone",
     orientation: "portrait",

@@ -15,8 +15,8 @@ export default function PublicSiteHeader({ active }: PublicSiteHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-background/85">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-5 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3" aria-label="OpenReply home">
-          <span className="text-lg font-bold text-white">OpenReply</span>
+        <Link href="/" className="flex items-center gap-3" aria-label="Claude OpenAI home">
+          <span className="text-lg font-bold tracking-tight text-white">Claude OpenAI</span>
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">
