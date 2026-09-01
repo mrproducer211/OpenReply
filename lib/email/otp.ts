@@ -2,16 +2,29 @@ import nodemailer from "nodemailer";
 import { prisma } from "@/lib/db/client";
 
 function getFromEmail(): string {
-  const envFrom = process.env.EMAIL_FROM?.trim();
+  let envFrom = process.env.EMAIL_FROM?.trim();
   if (envFrom) {
-    if (envFrom.includes("<") && envFrom.includes(">") && envFrom.includes("@") && !envFrom.includes("example.com")) {
-      return envFrom;
+    // Strip surrounding quotes if entered with quotes in .env / Vercel
+    envFrom = envFrom.replace(/^["']+|["']+$/g, "").trim();
+
+    // Check if it's already "Name <email@domain>"
+    const match = envFrom.match(/^(?:([^<]+)\s+)?<([^>]+)>$/);
+    if (match) {
+      const name = match[1]?.trim();
+      const email = match[2]?.trim();
+      if (email && email.includes("@") && !email.includes("example.com")) {
+        return name ? `${name} <${email}>` : email;
+      }
     }
-    if (envFrom.includes("@") && !envFrom.includes("example.com")) {
+
+    // If it's a plain email address "email@domain"
+    if (envFrom.includes("@") && !envFrom.includes("example.com") && !envFrom.includes("<")) {
       return `OpenReply <${envFrom}>`;
     }
   }
-  return "OpenReply <onboarding@resend.dev>";
+
+  // Resend default onboarding verified domain
+  return "onboarding@resend.dev";
 }
 
 export async function sendOtpEmail(to: string, otp: string, purposeLabel: string): Promise<void> {
