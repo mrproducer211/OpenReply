@@ -185,6 +185,7 @@ export function parsePostbackEvents(
   payload: WebhookPayload
 ): WebhookPostbackEvent[] {
   const events: WebhookPostbackEvent[] = [];
+  const seen = new Set<string>();
 
   if (payload.object !== "instagram" && payload.object !== "page") return events;
 
@@ -199,11 +200,16 @@ export function parsePostbackEvents(
       // Ignore echoes of the account's own actions.
       if (userId === accountId) continue;
 
+      const mid = messaging.postback?.mid ?? messaging.message?.mid;
+      const key = mid ? `mid:${mid}` : `${accountId}:${userId}:${postbackPayload}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
       events.push({
         instagramAccountId: accountId,
         userId,
         payload: postbackPayload,
-        mid: messaging.postback?.mid ?? messaging.message?.mid,
+        mid,
       });
     }
 
@@ -222,11 +228,16 @@ export function parsePostbackEvents(
         if (!postbackPayload || !userId || !accountId) continue;
         if (userId === accountId) continue;
 
+        const mid = val?.postback?.mid ?? val?.message?.mid;
+        const key = mid ? `mid:${mid}` : `${accountId}:${userId}:${postbackPayload}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
         events.push({
           instagramAccountId: accountId,
           userId,
           payload: postbackPayload,
-          mid: val?.postback?.mid ?? val?.message?.mid,
+          mid,
         });
       }
     }
@@ -251,6 +262,7 @@ export function parseMessageEvents(
   payload: WebhookPayload
 ): WebhookMessageEvent[] {
   const events: WebhookMessageEvent[] = [];
+  const seen = new Set<string>();
 
   if (payload.object !== "instagram" && payload.object !== "page") return events;
 
@@ -273,6 +285,10 @@ export function parseMessageEvents(
       if (!text || !messageId || !senderId || !accountId) continue;
       // Ignore anything the connected account sent to itself.
       if (senderId === accountId) continue;
+
+      const key = `msg:${messageId}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
 
       events.push({
         instagramAccountId: accountId,
@@ -301,6 +317,10 @@ export function parseMessageEvents(
 
         if (!text || !messageId || !senderId || !accountId) continue;
         if (senderId === accountId) continue;
+
+        const key = `msg:${messageId}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
 
         events.push({
           instagramAccountId: accountId,

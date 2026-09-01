@@ -121,12 +121,26 @@ export async function POST(request: NextRequest) {
     );
 
     for (const event of postbackEvents) {
-      await queue.add(POSTBACK_JOB_NAME, {
-        instagramAccountId: event.instagramAccountId,
-        userId: event.userId,
-        payload: event.payload,
-        mid: event.mid,
-      });
+      const windowToken = Math.floor(Date.now() / 10000);
+      const safeJobId = event.mid
+        ? `postback_${Buffer.from(event.mid).toString("base64url")}`
+        : `postback_${event.instagramAccountId}_${event.userId}_${event.payload.replace(
+            /:/g,
+            "_"
+          )}_${windowToken}`;
+
+      await queue.add(
+        POSTBACK_JOB_NAME,
+        {
+          instagramAccountId: event.instagramAccountId,
+          userId: event.userId,
+          payload: event.payload,
+          mid: event.mid,
+        },
+        {
+          jobId: safeJobId,
+        }
+      );
     }
 
     // Inbound DMs → keyword-triggered autoreply.

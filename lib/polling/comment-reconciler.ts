@@ -210,9 +210,22 @@ async function sweepCampaign(
       where: {
         automationId: automation.id,
         commentId: { in: needsAction.map((c) => c.id) },
-        ...(automation.publicReplyEnabled
-          ? { publicReplySentAt: { not: null } }
-          : { status: "SENT" }),
+        OR: [
+          {
+            status: {
+              in: [
+                "SENT",
+                "FAILED",
+                "SKIPPED_RATE_LIMIT",
+                "SKIPPED_PLAN_LIMIT",
+                "SKIPPED_NO_MATCH",
+              ],
+            },
+          },
+          ...(automation.publicReplyEnabled
+            ? [{ publicReplySentAt: { not: null } }]
+            : []),
+        ],
       },
       select: { commentId: true },
     });
