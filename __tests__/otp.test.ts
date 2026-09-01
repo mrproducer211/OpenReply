@@ -20,9 +20,16 @@ vi.mock("nodemailer", () => ({
   },
 }));
 
+global.fetch = vi.fn().mockResolvedValue({
+  ok: true,
+  json: async () => ({ id: "123" }),
+  text: async () => JSON.stringify({ id: "123" }),
+}) as unknown as typeof fetch;
+
 describe("OTP Verification Flow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.RESEND_API_KEY = "re_test_key";
   });
 
   it("should generate and store OTP code", async () => {

@@ -1,11 +1,23 @@
 import nodemailer from "nodemailer";
 import { prisma } from "@/lib/db/client";
 
-const emailFrom = process.env.EMAIL_FROM ?? "OpenReply <login@example.com>";
-const smtpServer = process.env.EMAIL_SERVER;
-const resendApiKey = process.env.RESEND_API_KEY;
+function getFromEmail(): string {
+  const envFrom = process.env.EMAIL_FROM?.trim();
+  if (envFrom) {
+    if (envFrom.includes("<") && envFrom.includes(">") && envFrom.includes("@") && !envFrom.includes("example.com")) {
+      return envFrom;
+    }
+    if (envFrom.includes("@") && !envFrom.includes("example.com")) {
+      return `OpenReply <${envFrom}>`;
+    }
+  }
+  return "OpenReply <onboarding@resend.dev>";
+}
 
 export async function sendOtpEmail(to: string, otp: string, purposeLabel: string): Promise<void> {
+  const emailFrom = getFromEmail();
+  const smtpServer = process.env.EMAIL_SERVER;
+  const resendApiKey = process.env.RESEND_API_KEY;
   const subject = `Your OpenReply verification code: ${otp}`;
   const textContent = `Your verification code to ${purposeLabel} is:\n\n${otp}\n\nThis code will expire in 10 minutes. If you did not request this, please ignore this email.`;
   const htmlContent = `
@@ -53,7 +65,12 @@ export async function sendOtpEmail(to: string, otp: string, purposeLabel: string
 
     if (!response.ok) {
       const errorData = await response.text().catch(() => "");
-      throw new Error(`Failed to send email via Resend: ${errorData || response.statusText}`);
+      let parsedMessage = errorData;
+      try {
+        const json = JSON.parse(errorData);
+        if (json.message) parsedMessage = json.message;
+      } catch {}
+      throw new Error(parsedMessage || response.statusText);
     }
     return;
   }
