@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUserId, getCurrentWorkspaceId } from "@/lib/auth";
 import { prisma } from "@/lib/db/client";
 import { verifyOtp } from "@/lib/email/otp";
+import { clearWorkerAlerts } from "@/lib/ops/worker-health";
+import { getDMQueue } from "@/lib/queue/client";
 
 export const runtime = "nodejs";
 
@@ -42,8 +44,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Clear workspace events and webhook events
-  const [ops, webhooks] = await Promise.all([
+  // Clear workspace events, webhook events, worker alerts, failed DM logs, and queue failures
+  const [ops, webhooks, dmFailures] = await Promise.all([
     prisma.operationalEvent.deleteMany({
       where: {
         OR: [{ workspaceId }, { workspaceId: null }],
@@ -54,11 +56,27 @@ export async function POST(request: NextRequest) {
         OR: [{ workspaceId }, { workspaceId: null }],
       },
     }),
+    prisma.dmLog.deleteMany({
+      where: {
+        workspaceId,
+        status: {
+          in: [
+            "FAILED",
+            "SKIPPED_RATE_LIMIT",
+            "SKIPPED_PLAN_LIMIT",
+            "SKIPPED_NO_MATCH",
+          ],
+        },
+      },
+    }),
+    clearWorkerAlerts().catch(() => {}),
+    getDMQueue().clean(0, 0, "failed").catch(() => []),
   ]);
 
   return NextResponse.json({
     success: true,
     deletedOps: ops.count,
     deletedWebhooks: webhooks.count,
+    deletedDmFailures: dmFailures.count,
   });
 }

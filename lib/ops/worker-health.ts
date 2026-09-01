@@ -94,3 +94,7 @@ export async function getWorkerAlerts(limit = 10): Promise<WorkerAlert[]> {
     .map((value) => parseJson<WorkerAlert>(value))
     .filter((value): value is WorkerAlert => Boolean(value));
 }
+
+export async function clearWorkerAlerts(): Promise<void> {
+  await getRedisConnection().del(WORKER_ALERTS_KEY);
+}
