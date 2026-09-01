@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import StatusBadge from "@/components/status-badge";
+import ClearHistoryModal from "@/components/clear-history-modal";
 
 interface DiagnosticsData {
   queueCounts: Record<string, number>;
@@ -78,6 +79,7 @@ function Section({
 export default function DiagnosticsPage() {
   const [data, setData] = useState<DiagnosticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showClearModal, setShowClearModal] = useState(false);
 
   async function refreshDiagnostics() {
     setLoading(true);
@@ -130,13 +132,36 @@ export default function DiagnosticsPage() {
             Health, queues, webhook failures, billing events, and worker alerts.
           </p>
         </div>
-        <button
-          onClick={() => void refreshDiagnostics()}
-          className="rounded border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-border-hover"
-        >
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => void refreshDiagnostics()}
+            className="rounded border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground transition hover:border-border-hover"
+          >
+            Refresh
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowClearModal(true)}
+            className="rounded border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-600 dark:text-red-400 transition hover:bg-red-500/20 flex items-center gap-1.5"
+          >
+            <span>🗑️</span>
+            <span>Clear History</span>
+          </button>
+        </div>
       </div>
+
+      <ClearHistoryModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onSuccess={() => {
+          void refreshDiagnostics();
+        }}
+        title="Clear Diagnostics History"
+        description="Permanently delete operational events, failure logs, and historical sweep alerts for your workspace."
+        purpose="clear-diagnostics"
+        purposeLabel="clear all diagnostics events and history"
+        clearEndpoint="/api/admin/diagnostics/clear"
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
         <div className="panel rounded p-4 sm:p-5">

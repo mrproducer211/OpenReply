@@ -9,6 +9,7 @@
 import { useEffect, useState, useCallback } from "react";
 import AccountSelect, { type AccountOption } from "@/components/account-select";
 import StatusBadge from "@/components/status-badge";
+import ClearHistoryModal from "@/components/clear-history-modal";
 
 interface DmLog {
   id: string;
@@ -47,6 +48,7 @@ export default function LogsPage() {
   const [accounts, setAccounts] = useState<AccountOption[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState("all");
   const [page, setPage] = useState(1);
+  const [showClearModal, setShowClearModal] = useState(false);
 
   const fetchLogs = useCallback(async () => {
     try {
@@ -99,7 +101,7 @@ export default function LogsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
+      {/* Filters & Actions */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex flex-wrap gap-2">
           {STATUS_FILTERS.map((status) => (
@@ -119,14 +121,38 @@ export default function LogsPage() {
             </button>
           ))}
         </div>
-        {accounts.length > 1 && (
-          <AccountSelect
-            accounts={accounts}
-            value={selectedAccountId}
-            onChange={handleAccountChange}
-          />
-        )}
+        <div className="flex items-center gap-3">
+          {accounts.length > 1 && (
+            <AccountSelect
+              accounts={accounts}
+              value={selectedAccountId}
+              onChange={handleAccountChange}
+            />
+          )}
+          <button
+            type="button"
+            onClick={() => setShowClearModal(true)}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-red-500/30 text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors flex items-center gap-1.5"
+          >
+            <span>🗑️</span>
+            <span>Clear DM Logs</span>
+          </button>
+        </div>
       </div>
+
+      <ClearHistoryModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onSuccess={() => {
+          setPage(1);
+          fetchLogs();
+        }}
+        title="Clear DM Logs History"
+        description="Permanently delete all sent and failed DM logs for your workspace."
+        purpose="clear-dm-logs"
+        purposeLabel="clear all DM logs history"
+        clearEndpoint="/api/logs/clear"
+      />
 
       {/* Table */}
       <div className="panel rounded overflow-hidden">
