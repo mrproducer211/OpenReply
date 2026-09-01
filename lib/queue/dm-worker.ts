@@ -265,12 +265,14 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
     const alreadyPublicReplied = Boolean(existingLog?.publicReplySentAt);
     const needsDm = !alreadyDmd;
 
-    // Skip only when there is genuinely nothing left to do. A comment whose DM
-    // already sent but whose public reply never posted (e.g. it hit a rate
-    // limit) must still come back so the public reply can be retried.
-    if (existingLog?.status === "SKIPPED_PLAN_LIMIT") continue;
-    if (alreadyDmd && (alreadyPublicReplied || !automation.publicReplyEnabled)) {
-      continue;
+    // A private reply can only be sent once per comment. Skip if already sent, failed, or skipped.
+    if (existingLog && existingLog.status !== "PENDING") {
+      if (alreadyDmd && (alreadyPublicReplied || !automation.publicReplyEnabled)) {
+        continue;
+      }
+      if (existingLog.status === "FAILED" || existingLog.status.startsWith("SKIPPED_")) {
+        continue;
+      }
     }
 
     if (!automation.instagramAccount.accessToken) {
@@ -1030,7 +1032,7 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
       return;
     }
 
-    if (matchesOpeningBtn || isGenericLinkRequest || auto.openingDmEnabled) {
+    if (matchesOpeningBtn || isGenericLinkRequest) {
       await getDMQueue().add(
         POSTBACK_JOB_NAME,
         {
