@@ -44,7 +44,7 @@ services:
       CRON_SECRET: ${CRON_SECRET}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       RESEND_API_KEY: ${RESEND_API_KEY}
-      EMAIL_FROM: ${EMAIL_FROM:-OpenReply <login@example.com>}
+      EMAIL_FROM: ${EMAIL_FROM:-Claude OpenAI <info@claudeopenai.space>}
       META_GRAPH_API_VERSION: v25.0
       INSTAGRAM_APP_ID: ${INSTAGRAM_APP_ID}
       INSTAGRAM_APP_SECRET: ${INSTAGRAM_APP_SECRET}

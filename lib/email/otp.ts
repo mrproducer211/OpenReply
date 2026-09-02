@@ -27,7 +27,7 @@ export function getFromEmail(): string {
   }
 
   // Custom domain default
-  return "Claude OpenAI <login@claudeopenai.space>";
+  return "Claude OpenAI <info@claudeopenai.space>";
 }
 
 export async function sendOtpEmail(to: string, otp: string, purposeLabel: string): Promise<void> {
