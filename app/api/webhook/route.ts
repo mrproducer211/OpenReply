@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/client";
 import { getDMQueue } from "@/lib/queue/client";
 import {
@@ -16,12 +16,18 @@ const OPENING_DM_READ_FALLBACK_DELAY_MS = 5 * 60 * 1000;
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const mode = searchParams.get("hub.mode");
-  const token = searchParams.get("hub.verify_token");
+  const token = searchParams.get("hub.verify_token")?.trim();
   const challenge = searchParams.get("hub.challenge");
 
-  if (mode === "subscribe" && token === process.env.WEBHOOK_VERIFY_TOKEN) {
+  const expectedToken = process.env.WEBHOOK_VERIFY_TOKEN?.trim().replace(/^["']+|["']+$/g, "");
+
+  if (mode === "subscribe" && token && expectedToken && token === expectedToken) {
     return new NextResponse(challenge, { status: 200 });
   }
+
+  console.warn(
+    `[Webhook] Verification failed. Mode: ${mode}, Token match: ${token === expectedToken}`
+  );
 
   return NextResponse.json(
     { success: false, error: "Verification failed" },

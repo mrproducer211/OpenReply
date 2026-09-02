@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (!result.success) {
       return NextResponse.json(
         { success: false, error: result.error || "Failed to send sign-in code" },
-        { status: 500 }
+        { status: 400 }
       );
     }
 
@@ -38,6 +38,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to process request";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    return NextResponse.json({ success: false, error: message }, { status: 400 });
   }
 }
