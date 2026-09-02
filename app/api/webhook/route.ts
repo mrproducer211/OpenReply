@@ -19,6 +19,14 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get("hub.verify_token")?.trim();
   const challenge = searchParams.get("hub.challenge");
 
+  // Health check / link crawler probe without webhook challenge params
+  if (!mode && !token && !challenge) {
+    return NextResponse.json(
+      { status: "ok", message: "Instagram Webhook endpoint active" },
+      { status: 200 }
+    );
+  }
+
   const expectedToken = process.env.WEBHOOK_VERIFY_TOKEN?.trim().replace(/^["']+|["']+$/g, "");
 
   if (mode === "subscribe" && token && expectedToken && token === expectedToken) {
