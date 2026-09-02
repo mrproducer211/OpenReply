@@ -565,17 +565,30 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
           commenterName,
           trackedLinks: [],
         });
-        await sendPrivateReplyWithButton(
-          accessToken,
-          automation.instagramAccount.instagramId,
-          commentId,
-          openingText,
-          automation.openingDmButtonLabel as string,
-          automation.requireFollow
-            ? `followcheck:${automation.id}`
-            : `reveal:${automation.id}`
-        );
-        } else if (sendFollowPrompt) {
+        try {
+          await sendPrivateReplyWithButton(
+            accessToken,
+            automation.instagramAccount.instagramId,
+            commentId,
+            openingText,
+            automation.openingDmButtonLabel as string,
+            automation.requireFollow
+              ? `followcheck:${automation.id}`
+              : `reveal:${automation.id}`
+          );
+        } catch (buttonErr) {
+          console.log(
+            "[DM Worker] Private reply with button failed, falling back to text:",
+            formatError(buttonErr)
+          );
+          await sendPrivateReply(
+            accessToken,
+            automation.instagramAccount.instagramId,
+            commentId,
+            openingText
+          );
+        }
+      } else if (sendFollowPrompt) {
         const promptText = renderMessageWithoutLink({
           message:
             followStatus === null
@@ -584,16 +597,29 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
                 "Quick favor before I send your link! Make sure you are following, then tap the button below and I'll send it right over!",
           commenterName,
         });
-        await sendPrivateReplyWithButton(
-          accessToken,
-          automation.instagramAccount.instagramId,
-          commentId,
-          promptText,
-          followStatus === null
-            ? FOLLOW_VERIFICATION_RETRY_BUTTON
-            : automation.followPromptButtonLabel || "i'm following",
-          `followcheck:${automation.id}`
-        );
+        try {
+          await sendPrivateReplyWithButton(
+            accessToken,
+            automation.instagramAccount.instagramId,
+            commentId,
+            promptText,
+            followStatus === null
+              ? FOLLOW_VERIFICATION_RETRY_BUTTON
+              : automation.followPromptButtonLabel || "i'm following",
+            `followcheck:${automation.id}`
+          );
+        } catch (buttonErr) {
+          console.log(
+            "[DM Worker] Follow prompt button failed, falling back to text:",
+            formatError(buttonErr)
+          );
+          await sendPrivateReply(
+            accessToken,
+            automation.instagramAccount.instagramId,
+            commentId,
+            promptText
+          );
+        }
       } else if (automation.trackedLinks.length > 0) {
         // Try button template first; if Meta rejects it, fall back to inline links.
         const bodyText =
