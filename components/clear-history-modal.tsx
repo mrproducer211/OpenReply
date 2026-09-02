@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 
@@ -32,9 +32,13 @@ export default function ClearHistoryModal({
 
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep("initial");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOtp("");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false);
     }
   }, [isOpen]);
@@ -116,7 +120,7 @@ export default function ClearHistoryModal({
             onClick={onClose}
             className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
           >
-            ✕
+            âœ•
           </button>
         </div>
 

@@ -1,6 +1,5 @@
-import { EMAIL_PROVIDER_ID, signIn } from "@/lib/auth";
+﻿import { EMAIL_PROVIDER_ID, signIn } from "@/lib/auth";
 import { getCampaignTemplate } from "@/lib/templates/campaign-templates";
-import { DemoNotice } from "@/components/demo-notice";
 
 export const metadata = {
   title: "Login - Claude OpenAI",

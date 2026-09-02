@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/client";
 import { getDMQueue } from "@/lib/queue/client";
 import {
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
   if (!verifyWebhookSignature(rawBody, signature)) {
     // Record the attempt so a signature mismatch is visible rather than a
     // silent 401. This is the common symptom of FACEBOOK_APP_SECRET being
-    // set to the wrong app's secret for the webhook's signing key.
+    // set to the wrong app\'s secret for the webhook\'s signing key.
     await prisma.operationalEvent
       .create({
         data: {
@@ -82,13 +82,18 @@ export async function POST(request: NextRequest) {
     const commentEvents = parseCommentEvents(
       payload as Parameters<typeof parseCommentEvents>[0]
     );
-    const queue = getDMQueue();
 
     for (const event of commentEvents) {
-      const account = await prisma.instagramAccount.findUnique({
-        where: { instagramId: event.instagramAccountId },
-        select: { workspaceId: true },
-      });
+      const queue = getDMQueue();
+
+      // Check if there\'s already a pending/processing job for this comment
+      // to avoid duplicate processing from comment edits
+      const existingJob = await queue.getJob(
+        `comment_${event.instagramAccountId}_${event.commentId}`
+      );
+      if (existingJob && (existingJob as { status?: string }).status !== "failed") {
+        continue;
+      }
 
       await queue.add(
         "process-comment",
@@ -100,13 +105,17 @@ export async function POST(request: NextRequest) {
           commenterName: event.commenterName,
           mediaId: event.mediaId,
           originalMediaId: event.originalMediaId,
-          source: "WEBHOOK",
         },
         {
           jobId: `comment_${event.instagramAccountId}_${event.commentId}`,
         }
       );
 
+      // Attach workspace to the webhook event so the user can see it
+      const account = await prisma.instagramAccount.findUnique({
+        where: { instagramId: event.instagramAccountId },
+        select: { workspaceId: true },
+      });
       if (account) {
         await prisma.webhookEvent.update({
           where: { id: webhookEvent.id },
@@ -129,6 +138,7 @@ export async function POST(request: NextRequest) {
             "_"
           )}_${windowToken}`;
 
+      const queue = getDMQueue();
       await queue.add(
         POSTBACK_JOB_NAME,
         {
@@ -143,10 +153,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Inbound DMs → keyword-triggered autoreply.
+    // Inbound DMs from users with keyword triggers
     const messageEvents = parseMessageEvents(
       payload as Parameters<typeof parseMessageEvents>[0]
     );
+    const queue = getDMQueue();
 
     for (const event of messageEvents) {
       const account = await prisma.instagramAccount.findUnique({
@@ -258,3 +269,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+

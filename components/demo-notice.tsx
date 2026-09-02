@@ -1,5 +1,5 @@
-"use client";
+﻿"use client";
 
-export function DemoNotice({ variant }: { variant: "banner" | "panel" }) {
+export function DemoNotice({ variant: _variant }: { variant: "banner" | "panel" }) {
   return null;
 }

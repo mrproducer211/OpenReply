@@ -1,0 +1,113 @@
+# OpenReply — Production Docker Compose
+# Run: docker-compose -f docker-compose.prod.yml up -d
+
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: openreply
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: sh -c "npx prisma migrate deploy && npm start"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/openreply
+      REDIS_URL: redis://redis:6379
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      CRON_SECRET: ${CRON_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM:-OpenReply <login@example.com>}
+      META_GRAPH_API_VERSION: v25.0
+      INSTAGRAM_APP_ID: ${INSTAGRAM_APP_ID}
+      INSTAGRAM_APP_SECRET: ${INSTAGRAM_APP_SECRET}
+      FACEBOOK_APP_SECRET: ${FACEBOOK_APP_SECRET}
+      WEBHOOK_VERIFY_TOKEN: ${WEBHOOK_VERIFY_TOKEN}
+      ALLOWED_EMAILS: ${ALLOWED_EMAILS:-}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: npm run worker
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/openreply
+      REDIS_URL: redis://redis:6379
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      CRON_SECRET: ${CRON_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      META_GRAPH_API_VERSION: v25.0
+      INSTAGRAM_APP_ID: ${INSTAGRAM_APP_ID}
+      INSTAGRAM_APP_SECRET: ${INSTAGRAM_APP_SECRET}
+      FACEBOOK_APP_SECRET: ${FACEBOOK_APP_SECRET}
+      WEBHOOK_VERIFY_TOKEN: ${WEBHOOK_VERIFY_TOKEN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  cron:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: sh -c "npx prisma generate && sh scripts/cron.sh"
+    environment:
+      NODE_ENV: production
+      CRON_BASE_URL: http://web:3000
+      CRON_SECRET: ${CRON_SECRET}
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/openreply
+      REDIS_URL: redis://redis:6379
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

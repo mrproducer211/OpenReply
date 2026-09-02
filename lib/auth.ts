@@ -1,4 +1,4 @@
-import NextAuth, { type NextAuthConfig } from "next-auth";
+﻿import NextAuth, { type NextAuthConfig } from "next-auth";
 import Nodemailer from "next-auth/providers/nodemailer";
 import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
@@ -8,7 +8,7 @@ import { isEmailAllowedToSignIn } from "@/lib/env";
 
 type AdapterPrismaClient = Parameters<typeof PrismaAdapter>[0];
 
-const emailFrom = process.env.EMAIL_FROM ?? "Claude OpenAI <login@example.com>";
+const emailFrom = process.env.EMAIL_FROM ?? "OpenReply <login@example.com>";
 // Setting EMAIL_SERVER switches magic links to your own SMTP server, for
 // self-hosters who do not want a third-party mail service. Resend stays the
 // default, so an existing deployment is unaffected.

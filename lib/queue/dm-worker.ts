@@ -1,4 +1,4 @@
-import { Worker, type Job } from "bullmq";
+﻿import { Worker, type Job } from "bullmq";
 import {
   getDMQueue,
   getRedisConnection,
@@ -60,7 +60,7 @@ function formatError(error: unknown): string {
 
 // Meta rejections that a plain-text retry cannot fix: the send was refused for
 // the conversation, not for the button template. Retrying as text just burns
-// the attempt and — worse — overwrites the real error with a misleading one
+// the attempt and â€” worse â€” overwrites the real error with a misleading one
 // ("invalid for a private reply", because the first attempt already used up the
 // comment's single allowed private reply).
 const NON_TEMPLATE_REJECTIONS = [
@@ -125,7 +125,7 @@ type RevealAutomation = {
 
 /**
  * Deliver a campaign's reveal message as a direct message. Shared by the
- * button-tap (postback) path and the DM keyword-trigger path — both already
+ * button-tap (postback) path and the DM keyword-trigger path â€” both already
  * have an open conversation with the user, so neither uses a private reply.
  */
 async function sendRevealDirectMessage(
@@ -366,7 +366,7 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
       });
     }
 
-    // Public reply leg — decoupled from the DM and posted first so a DM failure
+    // Public reply leg â€” decoupled from the DM and posted first so a DM failure
     // (e.g. a non-follower whose messaging is restricted) never suppresses it.
     // Idempotent across retries via publicReplySentAt.
     const replyPool =
@@ -414,13 +414,13 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
     // this run needed. Don't re-send the DM.
     if (!needsDm) continue;
 
-    // Meta allows exactly ONE private reply per comment, ever — across every
+    // Meta allows exactly ONE private reply per comment, ever â€” across every
     // campaign. When several campaigns match the same comment (duplicated
     // campaigns, or an any-post campaign overlapping a post-specific one), only
     // the first can deliver; the rest would fail with "The comment is invalid
     // for a private reply". Skip them explicitly instead of burning an API call
     // and logging a failure the user can do nothing about. The public reply
-    // above still goes out per campaign — only the DM leg is deduped.
+    // above still goes out per campaign â€” only the DM leg is deduped.
     const privateReplyUsedBy = await prisma.dmLog.findFirst({
       where: {
         commentId,
@@ -548,7 +548,7 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
 
     // Follow-gating: the link is revealed only after a follow. When an opening
     // DM is enabled it comes FIRST, and its button routes into the follow check
-    // (opening DM → follow gate → link). Without an opening DM, we check follow
+    // (opening DM â†’ follow gate â†’ link). Without an opening DM, we check follow
     // status at comment time: confirmed followers get the link now, everyone
     // else gets the "follow me first" prompt (re-verified on tap).
     let sendFollowPrompt = false;
@@ -575,7 +575,7 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
             ? `followcheck:${automation.id}`
             : `reveal:${automation.id}`
         );
-      } else if (sendFollowPrompt) {
+        } else if (sendFollowPrompt) {
         const promptText = renderMessageWithoutLink({
           message:
             followStatus === null
@@ -701,10 +701,12 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
  * IGSID (same id as their comment author id), which we DM directly.
  */
 async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
-  const { instagramAccountId, userId, payload, fallback } = job.data;
+  const { userId, payload, fallback } = job.data;
 
   const isFollowCheck = payload.startsWith("followcheck:");
-  if (!isFollowCheck && !payload.startsWith("reveal:")) return;
+  if (!isFollowCheck && !payload.startsWith("reveal:")) {
+    return;
+  }
   const automationId = payload.slice(
     isFollowCheck ? "followcheck:".length : "reveal:".length
   );
@@ -878,7 +880,7 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
     // opening DM and never tapped the button, which means they never messaged
     // us, which means the 24-hour window is closed and Meta rejects the send
     // ("outside of allowed window"). That is the expected outcome here, not a
-    // failure the user can act on — so don't log it as FAILED and don't retry
+    // failure the user can act on â€” so don't log it as FAILED and don't retry
     // it against a window that cannot reopen on its own. It still delivers in
     // the case that does work: the user replied by typing instead of tapping.
     if (fallback) {
@@ -916,7 +918,7 @@ async function processPostback(job: Job<ProcessPostbackJob>): Promise<void> {
  * window closed because the delay was long), it is logged, not retried forever.
  */
 async function processFollowUp(job: Job<ProcessFollowUpJob>): Promise<void> {
-  const { instagramAccountId, userId, automationId, commenterName } = job.data;
+  const { userId, automationId, commenterName } = job.data;
 
   const automation = await prisma.automation.findFirst({
     where: { id: automationId, isActive: true },
@@ -991,6 +993,9 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  if (!recentOpeningLog?.automation) {
+    }
 
   if (recentOpeningLog?.automation) {
     const auto = recentOpeningLog.automation;
@@ -1091,7 +1096,7 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
       },
     });
 
-    // Already replied to this message (or deliberately skipped it) — a retry
+    // Already replied to this message (or deliberately skipped it) â€” a retry
     // of the job must not send a second DM.
     if (
       existingLog?.status === "SENT" ||
@@ -1156,7 +1161,7 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
     }
 
     // Reuse a name captured on an earlier interaction so {username} still
-    // renders — the messages webhook carries only the sender's IGSID.
+    // renders â€” the messages webhook carries only the sender's IGSID.
     const priorLog = await prisma.dmLog.findFirst({
       where: { automationId: automation.id, commenterId: senderId },
       select: { commenterName: true },
@@ -1203,7 +1208,7 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
             followStatus === null
               ? FOLLOW_VERIFICATION_RETRY_MESSAGE
               : automation.followPromptMessage ||
-                "Almost there! Follow me and tap the button below to grab your link 💛",
+                "Almost there! Follow me and tap the button below to grab your link ðŸ’›",
           commenterName,
         });
         await sendDirectMessageWithButton(
@@ -1213,7 +1218,7 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
           promptText,
           followStatus === null
             ? FOLLOW_VERIFICATION_RETRY_BUTTON
-            : automation.followPromptButtonLabel || "I'm following ✅",
+            : automation.followPromptButtonLabel || "I'm following âœ…",
           `followcheck:${automation.id}`
         );
       } else {
@@ -1227,7 +1232,7 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
 
         // The link has been delivered, so the appreciation follow-up applies
         // here exactly as it does after a button tap. Not scheduled behind the
-        // follow prompt — no link went out yet in that branch.
+        // follow prompt â€” no link went out yet in that branch.
         if (automation.followUpEnabled && automation.followUpMessage?.trim()) {
           await getDMQueue().add(
             FOLLOWUP_JOB_NAME,
@@ -1399,4 +1404,5 @@ export function createDMWorker(): Worker<DmQueueJob> {
 
   return worker;
 }
+
 

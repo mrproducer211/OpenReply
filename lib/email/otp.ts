@@ -1,3 +1,4 @@
+﻿import { randomInt } from "crypto";
 import nodemailer from "nodemailer";
 import { prisma } from "@/lib/db/client";
 
@@ -5,10 +6,10 @@ function getFromEmail(): string {
   let envFrom = process.env.EMAIL_FROM?.trim();
   if (envFrom) {
     // Strip surrounding quotes if entered with quotes in .env / Vercel
-    envFrom = envFrom.replace(/^["']+|["']+$/g, "").trim();
+    envFrom = envFrom.replace(/^[\"\']+|[\"\']+$/g, "").trim();
 
-    // Check if it's already "Name <email@domain>"
-    const match = envFrom.match(/^(?:([^<]+)\s+)?<([^>]+)>$/);
+    // Check if it\'s already "Name <email@domain>"
+    const match = envFrom.match(/^(?:([^<]+)\\s+)?<([^>]+)>$/);
     if (match) {
       const name = match[1]?.trim();
       const email = match[2]?.trim();
@@ -17,7 +18,7 @@ function getFromEmail(): string {
       }
     }
 
-    // If it's a plain email address "email@domain"
+    // If it\'s a plain email address "email@domain"
     if (envFrom.includes("@") && !envFrom.includes("example.com") && !envFrom.includes("<")) {
       return `OpenReply <${envFrom}>`;
     }
@@ -32,7 +33,7 @@ export async function sendOtpEmail(to: string, otp: string, purposeLabel: string
   const smtpServer = process.env.EMAIL_SERVER;
   const resendApiKey = process.env.RESEND_API_KEY;
   const subject = `Your OpenReply verification code: ${otp}`;
-  const textContent = `Your verification code to ${purposeLabel} is:\n\n${otp}\n\nThis code will expire in 10 minutes. If you did not request this, please ignore this email.`;
+  const textContent = `Your verification code to ${purposeLabel} is:\\n\\n${otp}\\n\\nThis code will expire in 10 minutes. If you did not request this, please ignore this email.`;
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #ffffff;">
       <h2 style="font-size: 20px; font-weight: 600; color: #111827; margin-bottom: 12px;">Security Verification</h2>
@@ -98,7 +99,7 @@ export async function generateAndSendOtp(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const identifier = `otp:${email.toLowerCase().trim()}:${purpose}`;
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = randomInt(100000, 999999).toString();
     const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Remove any previous active OTP for this identifier
