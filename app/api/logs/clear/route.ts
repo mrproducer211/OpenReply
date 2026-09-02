@@ -13,31 +13,46 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
+  // Ensure user is authorized for this workspace
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { ownerId: true },
+  });
+
+  const member = await prisma.workspaceMember.findFirst({
+    where: { workspaceId, userId },
+  });
+
+  if (workspace?.ownerId !== userId && !member) {
+    return NextResponse.json({ success: false, error: "Forbidden: insufficient permissions" }, { status: 403 });
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true },
   });
 
-  if (!user?.email) {
-    return NextResponse.json({ success: false, error: "User email not found" }, { status: 400 });
-  }
-
   let otp = "";
+  let confirm = false;
   try {
     const body = await request.json();
     otp = String(body.otp ?? "").trim();
+    confirm = Boolean(body.confirm);
   } catch {
-    return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
+    // defaults
   }
 
-  if (!otp) {
-    return NextResponse.json({ success: false, error: "Verification code is required" }, { status: 400 });
-  }
-
-  const verification = await verifyOtp(user.email, "clear-dm-logs", otp);
-  if (!verification.valid) {
+  if (otp && user?.email) {
+    const verification = await verifyOtp(user.email, "clear-dm-logs", otp);
+    if (!verification.valid) {
+      return NextResponse.json(
+        { success: false, error: verification.error || "Invalid verification code" },
+        { status: 400 }
+      );
+    }
+  } else if (!confirm) {
     return NextResponse.json(
-      { success: false, error: verification.error || "Invalid verification code" },
+      { success: false, error: "Confirmation is required to clear logs" },
       { status: 400 }
     );
   }
