@@ -78,4 +78,23 @@ describe("OTP Verification Flow", () => {
     expect(result.valid).toBe(false);
     expect(result.error).toContain("expired");
   });
+
+  it("should send verification request with both magic link and 6-digit OTP", async () => {
+    const { sendAuthVerificationRequest } = await import("@/lib/email/auth-verification");
+    await sendAuthVerificationRequest({
+      identifier: "login-user@example.com",
+      url: "http://localhost:3000/api/auth/callback/resend?token=xyz",
+      provider: { apiKey: "re_test_key" },
+    });
+
+    expect(prisma.verificationToken.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          identifier: "otp:login-user@example.com:login",
+          token: expect.stringMatching(/^\d{6}$/),
+        }),
+      })
+    );
+  });
 });
+

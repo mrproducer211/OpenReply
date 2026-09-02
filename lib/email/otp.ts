@@ -1,8 +1,8 @@
-﻿import { randomInt } from "crypto";
+import { randomInt } from "crypto";
 import nodemailer from "nodemailer";
 import { prisma } from "@/lib/db/client";
 
-function getFromEmail(): string {
+export function getFromEmail(): string {
   let envFrom = process.env.EMAIL_FROM?.trim();
   if (envFrom) {
     // Strip surrounding quotes if entered with quotes in .env / Vercel

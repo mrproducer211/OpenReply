@@ -1,4 +1,4 @@
-﻿import { EMAIL_PROVIDER_ID, signIn } from "@/lib/auth";
+import LoginForm from "@/components/login-form";
 import { getCampaignTemplate } from "@/lib/templates/campaign-templates";
 
 export const metadata = {
@@ -13,6 +13,8 @@ export default async function LoginPage({
     checkEmail?: string;
     callbackUrl?: string;
     template?: string;
+    error?: string;
+    email?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -23,16 +25,8 @@ export default async function LoginPage({
     : null;
   const callbackUrl = params.callbackUrl ?? templateCallbackUrl ?? "/dashboard";
 
-  async function sendMagicLink(formData: FormData) {
-    "use server";
-    await signIn(EMAIL_PROVIDER_ID, {
-      email: String(formData.get("email") ?? ""),
-      redirectTo: callbackUrl,
-    });
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center px-6">
+    <div className="min-h-screen flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-black tracking-tight text-foreground">
@@ -41,58 +35,28 @@ export default async function LoginPage({
           <p className="text-muted text-sm leading-relaxed mt-2">
             {selectedTemplate
               ? `Sign in to use the ${selectedTemplate.title} template.`
-              : "Sign in by email, then connect your Instagram professional account."}
+              : "Sign in with a one-time link or 6-digit code to connect your Instagram account."}
           </p>
         </div>
 
-        <div className="panel rounded p-8 shadow-black/40">
+        <div className="panel rounded-xl p-8 shadow-2xl shadow-black/40 border border-border">
           {selectedTemplate && !checkEmail && (
-            <div className="mb-5 border border-accent/20 bg-accent/10 p-4">
+            <div className="mb-5 rounded-lg border border-accent/20 bg-accent/10 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-accent">
                 Template selected
               </p>
-              <p className="mt-2 text-sm font-semibold text-foreground">
+              <p className="mt-1 text-sm font-semibold text-foreground">
                 {selectedTemplate.title}
               </p>
             </div>
           )}
 
-          {checkEmail ? (
-            <div className="text-center py-4">
-              <h2 className="text-lg font-semibold mb-2">Check your email</h2>
-              <p className="text-sm text-muted">
-                We sent you a secure sign-in link. Open it on this device to
-                continue.
-              </p>
-            </div>
-          ) : (
-            <form action={sendMagicLink} className="space-y-5">
-              <div className="space-y-2">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-foreground"
-                >
-                  Work email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  placeholder="you@company.com"
-                  className="w-full px-4 py-3 rounded bg-surface border border-border text-sm text-foreground placeholder:text-zinc-500 focus:border-accent/40 focus:outline-none transition-colors"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full inline-flex items-center justify-center gap-2 rounded bg-accent px-6 py-3.5 text-sm font-semibold text-white shadow-indigo-500/25 transition-all hover:shadow-indigo-500/30"
-              >
-                Email me a magic link
-              </button>
-            </form>
-          )}
+          <LoginForm
+            callbackUrl={callbackUrl}
+            initialError={params.error}
+            initialCheckEmail={checkEmail}
+            initialEmail={params.email ?? ""}
+          />
         </div>
       </div>
     </div>

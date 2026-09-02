@@ -1,4 +1,4 @@
-﻿import { Worker, type Job } from "bullmq";
+import { Worker, type Job } from "bullmq";
 import {
   getDMQueue,
   getRedisConnection,
@@ -1208,7 +1208,7 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
             followStatus === null
               ? FOLLOW_VERIFICATION_RETRY_MESSAGE
               : automation.followPromptMessage ||
-                "Almost there! Follow me and tap the button below to grab your link ðŸ’›",
+                "Almost there! Follow me and tap the button below to grab your link 💛",
           commenterName,
         });
         await sendDirectMessageWithButton(
@@ -1218,7 +1218,7 @@ async function processMessage(job: Job<ProcessMessageJob>): Promise<void> {
           promptText,
           followStatus === null
             ? FOLLOW_VERIFICATION_RETRY_BUTTON
-            : automation.followPromptButtonLabel || "I'm following âœ…",
+            : automation.followPromptButtonLabel || "I'm following ✅",
           `followcheck:${automation.id}`
         );
       } else {
