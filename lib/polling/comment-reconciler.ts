@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Comment reconciliation (polling safety net).
  *
  * Instagram webhooks are best-effort and never fire for a large class of
@@ -210,22 +210,16 @@ async function sweepCampaign(
       where: {
         automationId: automation.id,
         commentId: { in: needsAction.map((c) => c.id) },
-        OR: [
-          {
-            status: {
-              in: [
-                "SENT",
-                "FAILED",
-                "SKIPPED_RATE_LIMIT",
-                "SKIPPED_PLAN_LIMIT",
-                "SKIPPED_NO_MATCH",
-              ],
-            },
-          },
-          ...(automation.publicReplyEnabled
-            ? [{ publicReplySentAt: { not: null } }]
-            : []),
-        ],
+        status: {
+          in: [
+            "SENT",
+            "FAILED",
+            "SKIPPED_DEDUP",
+            "SKIPPED_RATE_LIMIT",
+            "SKIPPED_PLAN_LIMIT",
+            "SKIPPED_NO_MATCH",
+          ],
+        },
       },
       select: { commentId: true },
     });
