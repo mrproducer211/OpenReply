@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import InvitationAcceptCard from "@/components/invitation-accept-card";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db/client";
+import { maskEmail } from "@/lib/mask-email";
 
 type InvitePageProps = {
   params: Promise<{ token: string }>;
@@ -47,7 +48,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
           </h1>
           <p className="mt-4 text-sm leading-6 text-zinc-400">
             You were invited as {invitation.role.toLowerCase()} for{" "}
-            {invitation.email}.
+            {maskEmail(invitation.email)}.
           </p>
           <div className="mt-8">
             {expired ? (

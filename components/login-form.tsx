@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { maskEmail, maskEmailsInText } from "@/lib/mask-email";
 
 interface LoginFormProps {
   callbackUrl: string;
@@ -25,7 +26,7 @@ function getErrorMessage(error: string): string {
       return "Authentication provider error. Please try again.";
     case "Default":
     default:
-      return error || "An unexpected error occurred during sign in. Please try again.";
+      return maskEmailsInText(error) || "An unexpected error occurred during sign in. Please try again.";
   }
 }
 
@@ -78,7 +79,7 @@ export default function LoginForm({
       setStep("otp");
       setCountdown(60);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send sign-in code.");
+      setError(err instanceof Error ? maskEmailsInText(err.message) : "Failed to send sign-in code.");
     } finally {
       setLoading(false);
     }
@@ -116,7 +117,7 @@ export default function LoginForm({
         router.refresh();
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Verification failed.");
+      setError(err instanceof Error ? maskEmailsInText(err.message) : "Verification failed.");
       setLoading(false);
     }
   }
@@ -180,7 +181,7 @@ export default function LoginForm({
             </div>
             <h2 className="text-base font-semibold text-foreground">Check your inbox</h2>
             <p className="text-xs text-muted mt-1">
-              We sent a one-click magic link and 6-digit code to <strong className="text-foreground">{email}</strong>
+              We sent a one-click magic link and 6-digit code to <strong className="text-foreground">{maskEmail(email)}</strong>
             </p>
           </div>
 

@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import type { AccountOption } from "@/components/account-select";
 import { InstagramConnectNotice } from "@/components/instagram-connect-notice";
+import { maskEmail } from "@/lib/mask-email";
 
 interface SettingsData {
   workspace: {
@@ -228,9 +229,9 @@ export default function SettingsPage() {
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-foreground">
-                  {member.user.name ?? member.user.email ?? "Unknown member"}
+                  {member.user.name ?? maskEmail(member.user.email) ?? "Unknown member"}
                 </p>
-                <p className="text-xs text-muted">{member.user.email}</p>
+                <p className="text-xs text-muted">{maskEmail(member.user.email)}</p>
               </div>
               <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-muted">
                 {member.role}
@@ -252,7 +253,7 @@ export default function SettingsPage() {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-foreground">
-                      {invitation.email}
+                      {maskEmail(invitation.email)}
                     </p>
                     <p className="truncate text-xs text-muted">
                       {invitation.role} · {invitation.inviteUrl}
