@@ -35,17 +35,17 @@ export async function sendAuthVerificationRequest(params: {
     console.error("[AUTH] Error storing OTP verification token:", err);
   }
 
-  const subject = `Sign in to OpenReply (${otp})`;
-  const textContent = `Sign in to OpenReply\n\nClick the link below to sign in:\n${url}\n\nOr enter this 6-digit verification code:\n${otp}\n\nThis link and code will expire in 15 minutes. If you did not request this email, you can safely ignore it.`;
+  const subject = `Sign in to Claude OpenAI (${otp})`;
+  const textContent = `Sign in to Claude OpenAI\n\nClick the link below to sign in:\n${url}\n\nOr enter this 6-digit verification code:\n${otp}\n\nThis link and code will expire in 15 minutes. If you did not request this email, you can safely ignore it.`;
   const htmlContent = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #ffffff; color: #111827;">
-      <h1 style="font-size: 22px; font-weight: 700; margin-bottom: 16px; color: #111827; text-align: center;">Sign in to OpenReply</h1>
+      <h1 style="font-size: 22px; font-weight: 700; margin-bottom: 16px; color: #111827; text-align: center;">Sign in to Claude OpenAI</h1>
       <p style="font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 24px; text-align: center;">
         Click the button below to sign in directly to your account:
       </p>
       <div style="text-align: center; margin-bottom: 28px;">
         <a href="${url}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none; padding: 12px 28px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);">
-          Sign In to OpenReply
+          Sign In to Claude OpenAI
         </a>
       </div>
       <div style="border-top: 1px solid #e5e7eb; padding-top: 24px; margin-top: 24px; text-align: center;">
