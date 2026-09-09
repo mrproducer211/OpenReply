@@ -5,6 +5,7 @@ import os from "node:os";
 
 const worker = createDMWorker();
 const startedAt = new Date().toISOString();
+const HEARTBEAT_INTERVAL_MS = 30_000;
 console.log("[DM Worker] Started");
 
 async function heartbeat() {

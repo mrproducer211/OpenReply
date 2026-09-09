@@ -39,7 +39,7 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/openreply
       REDIS_URL: redis://redis:6379
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://www.claudeopenai.space}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       CRON_SECRET: ${CRON_SECRET}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
@@ -75,6 +75,7 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres123}@postgres:5432/openreply
       REDIS_URL: redis://redis:6379
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://www.claudeopenai.space}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       CRON_SECRET: ${CRON_SECRET}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
